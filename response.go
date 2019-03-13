@@ -1,8 +1,6 @@
 package ipp
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -16,7 +14,7 @@ type Response struct {
 	ProtocolVersionMinor uint8
 
 	StatusCode uint16
-	RequestId  int
+	RequestId  int32
 
 	OperationAttributes Attributes
 	Printers            []Attributes
@@ -49,66 +47,53 @@ func NewResponseDecoder(r io.Reader) *ResponseDecoder {
 
 func (d *ResponseDecoder) Decode() (*Response, error) {
 	/*
-    1 byte: Protocol Major Version - b
-    1 byte: Protocol Minor Version - b
-    2 byte: Status ID - h
-    4 byte: Request ID - i
-    1 byte: Operation Attribute Byte (\0x01)
-    N times: Attributes
-    1 byte: Attribute End Byte (\0x03)
+	   1 byte: Protocol Major Version - b
+	   1 byte: Protocol Minor Version - b
+	   2 byte: Status ID - h
+	   4 byte: Request ID - i
+	   1 byte: Operation Attribute Byte (\0x01)
+	   N times: Attributes
+	   1 byte: Attribute End Byte (\0x03)
 	*/
 
 	resp := new(Response)
 
 	// wrap the reader so we have more functionality
-	reader := bufio.NewReader(d.reader)
+	//reader := bufio.NewReader(d.reader)
 
-	if err := binary.Read(reader, binary.BigEndian, &resp.ProtocolVersionMajor); err != nil {
+	if err := binary.Read(d.reader, binary.BigEndian, &resp.ProtocolVersionMajor); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(reader, binary.BigEndian, &resp.ProtocolVersionMinor); err != nil {
+	if err := binary.Read(d.reader, binary.BigEndian, &resp.ProtocolVersionMinor); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(reader, binary.BigEndian, &resp.StatusCode); err != nil {
+	if err := binary.Read(d.reader, binary.BigEndian, &resp.StatusCode); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(reader, binary.BigEndian, &resp.RequestId); err != nil {
+	if err := binary.Read(d.reader, binary.BigEndian, &resp.RequestId); err != nil {
 		return nil, err
 	}
 
-	// pre-read attributed
-	attributeBuffer := new(bytes.Buffer)
-	for {
-		b, err := reader.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-
-		if err := attributeBuffer.WriteByte(b); err != nil {
-			return nil, err
-		}
-
-		if uint8(b) == TagEnd {
-			break
-		}
-	}
+	startByteSlice := make([]byte, 1)
 
 	tag := TagCupsInvalid
 	previousAttributeName := ""
 	tempAttributes := make(Attributes)
 	tagSet := false
 
-	attribDecoder := NewAttributeDecoder(attributeBuffer)
+	attribDecoder := NewAttributeDecoder(d.reader)
 
 	// decode attribute buffer
 	for {
-		startByte, err := attributeBuffer.ReadByte()
-		if err != nil {
+		if _, err := d.reader.Read(startByteSlice); err != nil {
 			return nil, err
 		}
+
+		startByte := startByteSlice[0]
+		fmt.Printf("start byte: %v\n", startByte)
 
 		// check if attributes are completed
 		if uint8(startByte) == TagEnd {
@@ -145,15 +130,15 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 			tagSet = true
 		}
 
-		// unread byte if tag was not a tag start byte
-		if !tagSet {
-			if err := attributeBuffer.UnreadByte(); err != nil {
+		if tagSet {
+			if _, err := d.reader.Read(startByteSlice); err != nil {
 				return nil, err
 			}
-			tagSet = false
+			startByte = startByteSlice[0]
 		}
 
-		attrib, err := attribDecoder.Decode()
+		fmt.Printf("tag byte: %v\n", startByte)
+		attrib, err := attribDecoder.Decode(Tag(startByte))
 		if err != nil {
 			return nil, err
 		}
@@ -164,7 +149,11 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 		} else {
 			tempAttributes[previousAttributeName] = append(tempAttributes[previousAttributeName], *attrib)
 		}
+
+		tagSet = false
 	}
+
+	fmt.Println("asdf")
 
 	if len(tempAttributes) > 0 && tag != TagCupsInvalid {
 		appendAttribute(resp, tag, tempAttributes)

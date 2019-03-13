@@ -26,7 +26,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 	}
 
 	switch value.(type) {
-	case int, int16, int8, int32, int64:
+	case int:
 		if tag != TagInteger {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
@@ -39,10 +39,74 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 
-		if err := e.encodeInteger(value.(int)); err != nil {
+		if err := e.encodeInteger(int32(value.(int))); err != nil {
 			return err
 		}
-	case []int, []int16, []int8, []int32, []int64:
+	case int16:
+		if tag != TagInteger {
+			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		}
+
+		if err := e.encodeTag(tag); err != nil {
+			return err
+		}
+
+		if err := e.encodeString(attribute); err != nil {
+			return err
+		}
+
+		if err := e.encodeInteger(int32(value.(int16))); err != nil {
+			return err
+		}
+	case int8:
+		if tag != TagInteger {
+			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		}
+
+		if err := e.encodeTag(tag); err != nil {
+			return err
+		}
+
+		if err := e.encodeString(attribute); err != nil {
+			return err
+		}
+
+		if err := e.encodeInteger(int32(value.(int8))); err != nil {
+			return err
+		}
+	case int32:
+		if tag != TagInteger {
+			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		}
+
+		if err := e.encodeTag(tag); err != nil {
+			return err
+		}
+
+		if err := e.encodeString(attribute); err != nil {
+			return err
+		}
+
+		if err := e.encodeInteger(value.(int32)); err != nil {
+			return err
+		}
+	case int64:
+		if tag != TagInteger {
+			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		}
+
+		if err := e.encodeTag(tag); err != nil {
+			return err
+		}
+
+		if err := e.encodeString(attribute); err != nil {
+			return err
+		}
+
+		if err := e.encodeInteger(int32(value.(int64))); err != nil {
+			return err
+		}
+	case []int:
 		if tag != TagInteger {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
@@ -62,7 +126,103 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 				}
 			}
 
+			if err := e.encodeInteger(int32(val)); err != nil {
+				return err
+			}
+		}
+	case []int16:
+		if tag != TagInteger {
+			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		}
+
+		for index, val := range value.([]int16) {
+			if err := e.encodeTag(tag); err != nil {
+				return err
+			}
+
+			if index == 0 {
+				if err := e.encodeString(attribute); err != nil {
+					return err
+				}
+			} else {
+				if err := e.writeNullByte(); err != nil {
+					return err
+				}
+			}
+
+			if err := e.encodeInteger(int32(val)); err != nil {
+				return err
+			}
+		}
+	case []int8:
+		if tag != TagInteger {
+			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		}
+
+		for index, val := range value.([]int8) {
+			if err := e.encodeTag(tag); err != nil {
+				return err
+			}
+
+			if index == 0 {
+				if err := e.encodeString(attribute); err != nil {
+					return err
+				}
+			} else {
+				if err := e.writeNullByte(); err != nil {
+					return err
+				}
+			}
+
+			if err := e.encodeInteger(int32(val)); err != nil {
+				return err
+			}
+		}
+	case []int32:
+		if tag != TagInteger {
+			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		}
+
+		for index, val := range value.([]int32) {
+			if err := e.encodeTag(tag); err != nil {
+				return err
+			}
+
+			if index == 0 {
+				if err := e.encodeString(attribute); err != nil {
+					return err
+				}
+			} else {
+				if err := e.writeNullByte(); err != nil {
+					return err
+				}
+			}
+
 			if err := e.encodeInteger(val); err != nil {
+				return err
+			}
+		}
+	case []int64:
+		if tag != TagInteger {
+			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		}
+
+		for index, val := range value.([]int64) {
+			if err := e.encodeTag(tag); err != nil {
+				return err
+			}
+
+			if index == 0 {
+				if err := e.encodeString(attribute); err != nil {
+					return err
+				}
+			} else {
+				if err := e.writeNullByte(); err != nil {
+					return err
+				}
+			}
+
+			if err := e.encodeInteger(int32(val)); err != nil {
 				return err
 			}
 		}
@@ -154,7 +314,7 @@ func (e *AttributeEncoder) encodeString(s string) error {
 	return err
 }
 
-func (e *AttributeEncoder) encodeInteger(i int) error {
+func (e *AttributeEncoder) encodeInteger(i int32) error {
 	if err := binary.Write(e.writer, binary.BigEndian, sizeInteger); err != nil {
 		return err
 	}
@@ -171,7 +331,7 @@ func (e *AttributeEncoder) encodeBoolean(b bool) error {
 }
 
 func (e *AttributeEncoder) encodeTag(t Tag) error {
-	return binary.Write(e.writer, binary.BigEndian, t)
+	return binary.Write(e.writer, binary.BigEndian, int8(t))
 }
 
 func (e *AttributeEncoder) writeNullByte() error {
@@ -179,8 +339,8 @@ func (e *AttributeEncoder) writeNullByte() error {
 }
 
 type Attribute struct {
-	Tag Tag
-	Name string
+	Tag   Tag
+	Name  string
 	Value interface{}
 }
 
@@ -192,19 +352,16 @@ func NewAttributeDecoder(r io.Reader) *AttributeDecoder {
 	return &AttributeDecoder{r}
 }
 
-func (d *AttributeDecoder) Decode() (*Attribute, error) {
-	attr := Attribute{}
-
-	// decode tag
-	if err := binary.Read(d.reader, binary.BigEndian, &attr.Tag); err != nil {
-		return nil, err
-	}
+func (d *AttributeDecoder) Decode(tag Tag) (*Attribute, error) {
+	attr := Attribute{Tag: tag}
 
 	name, err := d.decodeString()
 	if err != nil {
 		return nil, err
 	}
 	attr.Name = name
+
+	fmt.Printf("attr name: %v\n", name)
 
 	switch attr.Tag {
 	case TagEnum, TagInteger:
@@ -265,18 +422,21 @@ func (d *AttributeDecoder) decodeInteger() (i int, err error) {
 		return
 	}
 
-	if err = binary.Read(d.reader, binary.BigEndian, &i); err != nil {
+	var reti int32
+	if err = binary.Read(d.reader, binary.BigEndian, &reti); err != nil {
 		return
 	}
 
-	return
+	return int(reti), nil
 }
 
-func (d *AttributeDecoder) decodeString() (string, error){
+func (d *AttributeDecoder) decodeString() (string, error) {
 	length, err := d.readValueLength()
 	if err != nil {
 		return "", err
 	}
+
+	fmt.Printf("string length: %v\n", length)
 
 	if length == 0 {
 		return "", nil
@@ -290,7 +450,7 @@ func (d *AttributeDecoder) decodeString() (string, error){
 	return string(bs), nil
 }
 
-func (d *AttributeDecoder) decodeDate() ([]int, error){
+func (d *AttributeDecoder) decodeDate() ([]int, error) {
 	length, err := d.readValueLength()
 	if err != nil {
 		return nil, err
@@ -332,8 +492,8 @@ func (d *AttributeDecoder) decodeRange() ([]int, error) {
 
 type Resolution struct {
 	Height int
-	Width int
-	Depth uint8
+	Width  int
+	Depth  uint8
 }
 
 func (d *AttributeDecoder) decodeResolution() (res Resolution, err error) {
@@ -361,5 +521,3 @@ func (d *AttributeDecoder) readValueLength() (length int16, err error) {
 	err = binary.Read(d.reader, binary.BigEndian, &length)
 	return
 }
-
-

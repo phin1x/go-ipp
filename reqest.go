@@ -3,6 +3,7 @@ package ipp
 import (
 	"bytes"
 	"encoding/binary"
+	"io"
 )
 
 type Request struct {
@@ -13,12 +14,13 @@ type Request struct {
 	JobAttributes       map[string]interface{}
 	PrinterAttributes   map[string]interface{}
 
-	File string
+	File     io.Reader
+	FileSize int
 }
 
 func NewRequest(op Operation, reqID int) *Request {
 	return &Request{
-		op, reqID, make(map[string]interface{}), make(map[string]interface{}), make(map[string]interface{}), "",
+		op, reqID, make(map[string]interface{}), make(map[string]interface{}), make(map[string]interface{}), nil, -1,
 	}
 }
 
@@ -38,11 +40,11 @@ func (r *Request) Encode() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := binary.Write(buf, binary.BigEndian, r.RequestID); err != nil {
+	if err := binary.Write(buf, binary.BigEndian, int32(r.RequestID)); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(buf, binary.BigEndian, TagOperation); err != nil {
+	if err := binary.Write(buf, binary.BigEndian, int8(TagOperation)); err != nil {
 		return nil, err
 	}
 
@@ -63,7 +65,7 @@ func (r *Request) Encode() ([]byte, error) {
 	}
 
 	if len(r.JobAttributes) > 0 {
-		if err := binary.Write(buf, binary.BigEndian, TagJob); err != nil {
+		if err := binary.Write(buf, binary.BigEndian, int8(TagJob)); err != nil {
 			return nil, err
 		}
 		for attr, value := range r.JobAttributes {
@@ -74,7 +76,7 @@ func (r *Request) Encode() ([]byte, error) {
 	}
 
 	if len(r.PrinterAttributes) > 0 {
-		if err := binary.Write(buf, binary.BigEndian, TagPrinter); err != nil {
+		if err := binary.Write(buf, binary.BigEndian, int8(TagPrinter)); err != nil {
 			return nil, err
 		}
 		for attr, value := range r.PrinterAttributes {
@@ -84,7 +86,7 @@ func (r *Request) Encode() ([]byte, error) {
 		}
 	}
 
-	if err := binary.Write(buf, binary.BigEndian, TagEnd); err != nil {
+	if err := binary.Write(buf, binary.BigEndian, int8(TagEnd)); err != nil {
 		return nil, err
 	}
 

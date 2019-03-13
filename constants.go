@@ -1,6 +1,6 @@
 package ipp
 
-type Status uint8
+type Status int8
 
 const (
 	StatusCupsInvalid                         Status = -1
@@ -68,7 +68,7 @@ const (
 	StatusErrorCupsUpgradeRequired                   = 0x1002
 )
 
-type Operation uint16
+type Operation int16
 
 const (
 	OperationCupsInvalid                     Operation = -0x0001
@@ -190,7 +190,7 @@ const (
 	OperationCupsCreateLocalPrinter                    = 0x4028
 )
 
-type Tag uint8
+type Tag int8
 
 const (
 	TagCupsInvalid       Tag = -1

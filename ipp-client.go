@@ -16,11 +16,11 @@ const (
 )
 
 type IPPClient struct {
-	host string
-	port int
+	host     string
+	port     int
 	username string
 	password string
-	useTLS bool
+	useTLS   bool
 
 	client *http.Client
 }
@@ -54,20 +54,10 @@ func (c *IPPClient) call(url string, req *Request) (*Response, error) {
 	var body io.Reader
 	size := len(payload)
 
-	if req.File != "" {
-		fileStats, err := os.Stat(req.File)
-		if os.IsNotExist(err) {
-			return nil, err
-		}
-		size += int(fileStats.Size())
+	if req.File != nil && req.FileSize != -1 {
+		size += int(req.FileSize)
 
-		fileReader, err := os.Open(req.File)
-		if err != nil {
-			return nil, err
-		}
-		defer fileReader.Close()
-
-		body = io.MultiReader(bytes.NewBuffer(payload), fileReader)
+		body = io.MultiReader(bytes.NewBuffer(payload), req.File)
 	} else {
 		body = bytes.NewBuffer(payload)
 	}
@@ -94,19 +84,14 @@ func (c *IPPClient) call(url string, req *Request) (*Response, error) {
 		return nil, fmt.Errorf("ipp server returned with http status code %d", httpResp.StatusCode)
 	}
 
+	//httpyBody, _ := ioutil.ReadAll(httpResp.Body)
+	//fmt.Println(httpyBody)
+
 	return NewResponseDecoder(httpResp.Body).Decode()
 }
 
-func (c *IPPClient) PrintFile(printer, filePath, jobName string, copies, priority int) (int, error) {
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return -1, err
-	}
-
+func (c *IPPClient) Print(document io.Reader, size int, printer, jobName string, copies, priority int) (int, error) {
 	printerURI := fmt.Sprintf("ipp://localhost/printers/%s", printer)
-
-	if jobName == "" {
-		jobName = path.Base(filePath)
-	}
 
 	req := NewRequest(OperationCreateJob, 1)
 	req.OperationAttributes["printer-uri"] = printerURI
@@ -121,15 +106,17 @@ func (c *IPPClient) PrintFile(printer, filePath, jobName string, copies, priorit
 	}
 
 	jobID := resp.Jobs[0]["job-id"][0].Value.(int)
+	fmt.Println(jobID)
 
 	req = NewRequest(OperationSendDocument, 2)
 	req.OperationAttributes["printer-uri"] = printerURI
 	req.OperationAttributes["requesting-user-name"] = c.username
 	req.OperationAttributes["job-id"] = jobID
-	req.OperationAttributes["document-name1"] = jobName
+	req.OperationAttributes["document-name"] = jobName
 	req.OperationAttributes["document-format"] = "application/octet-stream"
-	req.OperationAttributes[""] = true
-	req.File = filePath
+	req.OperationAttributes["last-document"] = true
+	req.File = document
+	req.FileSize = size
 
 	resp, err = c.call(c.getHttpUri("printers", printerURI), req)
 	if err != nil {
@@ -137,4 +124,23 @@ func (c *IPPClient) PrintFile(printer, filePath, jobName string, copies, priorit
 	}
 
 	return jobID, nil
+}
+
+func (c *IPPClient) PrintFile(filePath, printer, jobName string, copies, priority int) (int, error) {
+	fileStats, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		return -1, err
+	}
+
+	if jobName == "" {
+		jobName = path.Base(filePath)
+	}
+
+	document, err := os.Open(filePath)
+	if err != nil {
+		return 0, err
+	}
+	defer document.Close()
+
+	return c.Print(document, int(fileStats.Size()), printer, jobName, copies, priority)
 }

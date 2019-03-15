@@ -93,7 +93,6 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 		}
 
 		startByte := startByteSlice[0]
-		fmt.Printf("start byte: %v\n", startByte)
 
 		// check if attributes are completed
 		if uint8(startByte) == TagEnd {
@@ -137,7 +136,6 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 			startByte = startByteSlice[0]
 		}
 
-		fmt.Printf("tag byte: %v\n", startByte)
 		attrib, err := attribDecoder.Decode(Tag(startByte))
 		if err != nil {
 			return nil, err
@@ -153,14 +151,16 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 		tagSet = false
 	}
 
-	fmt.Println("asdf")
-
 	if len(tempAttributes) > 0 && tag != TagCupsInvalid {
 		appendAttribute(resp, tag, tempAttributes)
 	}
 
 	if _, err := d.reader.Read(resp.Data); err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != 0 {
+		return resp, errors.New(resp.OperationAttributes["status-message"][0].Value.(string))
 	}
 
 	return resp, nil

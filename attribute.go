@@ -361,8 +361,6 @@ func (d *AttributeDecoder) Decode(tag Tag) (*Attribute, error) {
 	}
 	attr.Name = name
 
-	fmt.Printf("attr name: %v\n", name)
-
 	switch attr.Tag {
 	case TagEnum, TagInteger:
 		val, err := d.decodeInteger()
@@ -435,8 +433,6 @@ func (d *AttributeDecoder) decodeString() (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	fmt.Printf("string length: %v\n", length)
 
 	if length == 0 {
 		return "", nil

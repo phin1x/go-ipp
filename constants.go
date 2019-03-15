@@ -268,11 +268,23 @@ const (
 	PrinterStateStopped                 = 0x0005
 )
 
+type JobStateFilter string
+
+const (
+	JobStateFilterNotCompleted = "not-completed"
+	JobStateFilterCompleted    = "completed"
+)
+
 const (
 	CharsetLanguage      = "en-US"
 	Charset              = "utf-8"
 	ProtocolVersionMajor = uint8(2)
 	ProtocolVersionMinor = uint8(0)
+
+	DefaultJobPriority = 50
+
+	MimeTypePostscript  = "application/postscript"
+	MimeTypeOctetStream = "application/octet-stream"
 )
 
 var (

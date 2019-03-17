@@ -275,6 +275,15 @@ const (
 	JobStateFilterCompleted    = "completed"
 )
 
+type ErrorPolicy string
+
+const (
+	ErrorPolicyRetryJob        ErrorPolicy = "retry-job"
+	ErrorPolicyAbortJob                    = "abort-job"
+	ErrorPolicyRetryCurrentJob             = "retry-current-job"
+	ErrorPolicyStopPrinter                 = "stop-printer"
+)
+
 const (
 	CharsetLanguage      = "en-US"
 	Charset              = "utf-8"

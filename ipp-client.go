@@ -289,7 +289,7 @@ func (c *IPPClient) CancelJob(jobID int, purge bool) error {
 }
 
 func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
-	req := NewRequest(OperationCancelJob, 1)
+	req := NewRequest(OperationCancelJobs, 1)
 	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
 	req.OperationAttributes["purge-jobs"] = purge
 

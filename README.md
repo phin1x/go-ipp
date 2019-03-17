@@ -1,5 +1,10 @@
 # go-ipp
 
+[![Version](https://img.shields.io/github/release-pre/phin1x/go-ipp.svg)](https://github.com/phin1x/go-ipp/releases/tag/v1.0.0-beta)
+[![Licence](https://img.shields.io/github/license/phin1x/go-ipp.svg)](https://github.com/phin1x/go-ipp/blob/master/LICENSE)
+
+
+
 ## Go Get
 
 To get the package, execute:
@@ -12,7 +17,7 @@ go get -h github.com/phin1x/go-ipp
 * basic ipp 2.0 compatible Client
 * extended client for cups server
 * create custom ipp requests
-* parse ipp response and files 
+* parse ipp responses and ipp control files
 
 ## Examples
 

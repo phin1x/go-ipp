@@ -12,7 +12,7 @@ go get -h github.com/phin1x/go-ipp
 * basic ipp 2.0 compatible Client
 * extended client for cups server
 * create custom ipp requests
-* parse ipp response and files 
+* parse ipp responses and control files 
 
 ## Examples
 

@@ -131,7 +131,7 @@ func (c *IPPClient) Print(docs []Document, printer, jobName string, copies, prio
 	req := NewRequest(OperationCreateJob, 1)
 	req.OperationAttributes["printer-uri"] = printerURI
 	req.OperationAttributes["requesting-user-name"] = c.username
-	req.OperationAttributes["job-name"] = c.username
+	req.OperationAttributes["job-name"] = jobName
 	req.JobAttributes["copies"] = copies
 	req.JobAttributes["job-priority"] = priority
 

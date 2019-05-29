@@ -35,6 +35,11 @@ var attributeTestCases = []struct {
 		Value:     "utf-8",
 		Bytes:     []byte{71, 0, 18, 97, 116, 116, 114, 105, 98, 117, 116, 101, 115, 45, 99, 104, 97, 114, 115, 101, 116, 0, 5, 117, 116, 102, 45, 56},
 	},
+	{
+		Attribute: "printer-state",
+		Value:     3,
+		Bytes:     []byte("\x23\x00\x0dprinter-state\x00\x04\x00\x00\x00\x03"),
+	},
 }
 
 func TestAttributeEncoding(t *testing.T) {

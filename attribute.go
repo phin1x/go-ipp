@@ -27,8 +27,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 
 	switch value.(type) {
 	case int:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		if err := e.encodeTag(tag); err != nil {
@@ -43,8 +43,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case int16:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		if err := e.encodeTag(tag); err != nil {
@@ -59,8 +59,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case int8:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		if err := e.encodeTag(tag); err != nil {
@@ -75,8 +75,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case int32:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		if err := e.encodeTag(tag); err != nil {
@@ -91,8 +91,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case int64:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		if err := e.encodeTag(tag); err != nil {
@@ -107,8 +107,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case []int:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		for index, val := range value.([]int) {
@@ -131,8 +131,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	case []int16:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		for index, val := range value.([]int16) {
@@ -155,8 +155,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	case []int8:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		for index, val := range value.([]int8) {
@@ -179,8 +179,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	case []int32:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		for index, val := range value.([]int32) {
@@ -203,8 +203,8 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	case []int64:
-		if tag != TagInteger {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+		if tag != TagInteger && tag != TagEnum {
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		for index, val := range value.([]int64) {
@@ -228,7 +228,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 		}
 	case bool:
 		if tag != TagBoolean {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		if err := e.encodeTag(tag); err != nil {
@@ -244,7 +244,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 		}
 	case []bool:
 		if tag != TagBoolean {
-			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
+			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
 		for index, val := range value.([]bool) {

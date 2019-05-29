@@ -27,7 +27,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 
 	switch value.(type) {
 	case int:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -43,7 +43,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case int16:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -59,7 +59,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case int8:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -75,7 +75,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case int32:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -91,7 +91,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case int64:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -107,7 +107,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 	case []int:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -131,7 +131,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	case []int16:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -155,7 +155,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	case []int8:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -179,7 +179,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	case []int32:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 
@@ -203,7 +203,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	case []int64:
-		if tag != TagInteger {
+		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribte %s does not match with value type", attribute)
 		}
 

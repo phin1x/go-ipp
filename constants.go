@@ -340,5 +340,10 @@ var (
 		"printer-state":               TagEnum,
 		"document-state":              TagEnum,
 		"device-uri":                  TagUri,
+		"finishings":                  TagEnum,
+		"orientation-requested":       TagEnum,
+		"media":                       TagKeyword,
+		"printer-resolution":          TagResolution,
+		"print-quality":               TagEnum,
 	}
 )

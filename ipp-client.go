@@ -125,6 +125,7 @@ func (c *IPPClient) SendRequest(url string, req *Request) (*Response, error) {
 	//return NewResponseDecoder(httpResp.Body).Decode()
 }
 
+// Print one or more `Document`s using IPP `Create-Job` followed by `Send-Document` request(s).
 func (c *IPPClient) Print(docs []Document, printer, jobName string, copies, priority int) (int, error) {
 	printerURI := c.getPrinterUri(printer)
 
@@ -164,6 +165,53 @@ func (c *IPPClient) Print(docs []Document, printer, jobName string, copies, prio
 			return -1, err
 		}
 	}
+
+	return jobID, nil
+}
+
+// Print a `Document` using an IPP `Print-Job` request.
+//
+// `jobAttributes` can contain arbitrary key/value pairs to control the way in which the
+// document is printed. [RFC 2911 § 4.2](https://tools.ietf.org/html/rfc2911#section-4.2)
+// defines some useful attributes:
+//
+//   * [`job-priority`](https://tools.ietf.org/html/rfc2911#section-4.2.1): an integer between 1-100
+//   * [`copies`](https://tools.ietf.org/html/rfc2911#section-4.2.5): a positive integer
+//   * [`finishings`](https://tools.ietf.org/html/rfc2911#section-4.2.6): an enumeration
+//   * [`number-up`](https://tools.ietf.org/html/rfc2911#section-4.2.9): a positive integer
+//   * [`orientation-requested`](https://tools.ietf.org/html/rfc2911#section-4.2.10): an enumeration
+//   * [`media`](https://tools.ietf.org/html/rfc2911#section-4.2.11): a string
+//   * [`printer-resolution`](https://tools.ietf.org/html/rfc2911#section-4.2.12): a `Resolution`
+//   * [`print-quality`](https://tools.ietf.org/html/rfc2911#section-4.2.13): an enumeration
+//
+// Your print system may provide other attributes. Define custom attributes as needed in
+// `AttributeTagMapping` and provide values here.
+func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[string]interface{}) (int, error) {
+	printerURI := c.getPrinterUri(printer)
+
+	req := NewRequest(OperationPrintJob, 1)
+	req.OperationAttributes["printer-uri"] = printerURI
+	req.OperationAttributes["requesting-user-name"] = c.username
+	req.OperationAttributes["job-name"] = doc.Name
+	req.OperationAttributes["document-format"] = doc.MimeType
+
+	for key, value := range jobAttributes {
+		req.JobAttributes[key] = value
+	}
+
+	req.File = doc.Document
+	req.FileSize = doc.Size
+
+	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req)
+	if err != nil {
+		return -1, err
+	}
+
+	if len(resp.Jobs) == 0 {
+		return 0, errors.New("server doesn't returned a job id")
+	}
+
+	jobID := resp.Jobs[0]["job-id"][0].Value.(int)
 
 	return jobID, nil
 }

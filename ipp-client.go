@@ -126,15 +126,21 @@ func (c *IPPClient) SendRequest(url string, req *Request) (*Response, error) {
 }
 
 // Print one or more `Document`s using IPP `Create-Job` followed by `Send-Document` request(s).
-func (c *IPPClient) Print(docs []Document, printer, jobName string, copies, priority int) (int, error) {
+func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttributes map[string]interface{}) (int, error) {
 	printerURI := c.getPrinterUri(printer)
 
 	req := NewRequest(OperationCreateJob, 1)
-	req.OperationAttributes["printer-uri"] = printerURI
-	req.OperationAttributes["requesting-user-name"] = c.username
-	req.OperationAttributes["job-name"] = jobName
-	req.JobAttributes["copies"] = copies
-	req.JobAttributes["job-priority"] = priority
+	req.OperationAttributes[OperationAttributePrinterURI] = printerURI
+	req.OperationAttributes[OperationAttributeRequestingUserName] = c.username
+
+	// set defaults for some attributes, may get overwritten
+	req.OperationAttributes[OperationAttributeJobName] = docs[0].Name
+	req.OperationAttributes[OperationAttributeCopies] = 1
+	req.OperationAttributes[OperationAttributeJobPriority] = DefaultJobPriority
+
+	for key, value := range jobAttributes {
+		req.JobAttributes[key] = value
+	}
 
 	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req)
 	if err != nil {
@@ -145,18 +151,18 @@ func (c *IPPClient) Print(docs []Document, printer, jobName string, copies, prio
 		return 0, errors.New("server doesn't returned a job id")
 	}
 
-	jobID := resp.Jobs[0]["job-id"][0].Value.(int)
+	jobID := resp.Jobs[0][OperationAttributeJobID][0].Value.(int)
 
 	documentCount := len(docs) - 1
 
 	for docID, doc := range docs {
 		req = NewRequest(OperationSendDocument, 2)
-		req.OperationAttributes["printer-uri"] = printerURI
-		req.OperationAttributes["requesting-user-name"] = c.username
-		req.OperationAttributes["job-id"] = jobID
-		req.OperationAttributes["document-name"] = doc.Name
-		req.OperationAttributes["document-format"] = doc.MimeType
-		req.OperationAttributes["last-document"] = docID == documentCount
+		req.OperationAttributes[OperationAttributePrinterURI] = printerURI
+		req.OperationAttributes[OperationAttributeRequestingUserName] = c.username
+		req.OperationAttributes[OperationAttributeJobID] = jobID
+		req.OperationAttributes[OperationAttributeDocumentName] = doc.Name
+		req.OperationAttributes[OperationAttributeDocumentFormat] = doc.MimeType
+		req.OperationAttributes[OperationAttributeLastDocument] = docID == documentCount
 		req.File = doc.Document
 		req.FileSize = doc.Size
 
@@ -190,10 +196,14 @@ func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[str
 	printerURI := c.getPrinterUri(printer)
 
 	req := NewRequest(OperationPrintJob, 1)
-	req.OperationAttributes["printer-uri"] = printerURI
-	req.OperationAttributes["requesting-user-name"] = c.username
-	req.OperationAttributes["job-name"] = doc.Name
-	req.OperationAttributes["document-format"] = doc.MimeType
+	req.OperationAttributes[OperationAttributePrinterURI] = printerURI
+	req.OperationAttributes[OperationAttributeRequestingUserName] = c.username
+	req.OperationAttributes[OperationAttributeJobName] = doc.Name
+	req.OperationAttributes[OperationAttributeDocumentFormat] = doc.MimeType
+
+	// set defaults for some attributes, may get overwritten
+	req.OperationAttributes[OperationAttributeCopies] = 1
+	req.OperationAttributes[OperationAttributeJobPriority] = DefaultJobPriority
 
 	for key, value := range jobAttributes {
 		req.JobAttributes[key] = value
@@ -211,12 +221,12 @@ func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[str
 		return 0, errors.New("server doesn't returned a job id")
 	}
 
-	jobID := resp.Jobs[0]["job-id"][0].Value.(int)
+	jobID := resp.Jobs[0][OperationAttributeJobID][0].Value.(int)
 
 	return jobID, nil
 }
 
-func (c *IPPClient) PrintFile(filePath, printer string, copies, priority int) (int, error) {
+func (c *IPPClient) PrintFile(filePath, printer string, jobAttributes map[string]interface{}) (int, error) {
 	fileStats, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
 		return -1, err
@@ -230,25 +240,27 @@ func (c *IPPClient) PrintFile(filePath, printer string, copies, priority int) (i
 	}
 	defer document.Close()
 
-	return c.Print([]Document{
+	jobAttributes[OperationAttributeJobName] = fileName
+
+	return c.PrintDocuments([]Document{
 		{
 			Document: document,
 			Name:     fileName,
 			Size:     int(fileStats.Size()),
 			MimeType: MimeTypeOctetStream,
 		},
-	}, printer, fileName, copies, priority)
+	}, printer, jobAttributes)
 }
 
 func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (Attributes, error) {
 	req := NewRequest(OperationGetPrinterAttributes, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.OperationAttributes["requesting-user-name"] = c.username
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributeRequestingUserName] = c.username
 
 	if attributes == nil {
-		req.OperationAttributes["requested-attributes"] = DefaultPrinterAttributes
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = DefaultPrinterAttributes
 	} else {
-		req.OperationAttributes["requested-attributes"] = attributes
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = attributes
 	}
 
 	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req)
@@ -265,7 +277,7 @@ func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (A
 
 func (c *IPPClient) ResumePrinter(printer string) error {
 	req := NewRequest(OperationResumePrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -273,7 +285,7 @@ func (c *IPPClient) ResumePrinter(printer string) error {
 
 func (c *IPPClient) PausePrinter(printer string) error {
 	req := NewRequest(OperationPausePrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -281,12 +293,12 @@ func (c *IPPClient) PausePrinter(printer string) error {
 
 func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes, error) {
 	req := NewRequest(OperationGetJobAttributes, 1)
-	req.OperationAttributes["job-uri"] = c.getJobUri(jobID)
+	req.OperationAttributes[OperationAttributeJobURI] = c.getJobUri(jobID)
 
 	if attributes == nil {
-		req.OperationAttributes["requested-attributes"] = DefaultJobAttributes
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = DefaultJobAttributes
 	} else {
-		req.OperationAttributes["requested-attributes"] = attributes
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = attributes
 	}
 
 	resp, err := c.SendRequest(c.getHttpUri("jobs", jobID), req)
@@ -303,14 +315,14 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 
 func (c *IPPClient) GetJobs(printer string, whichJobs JobStateFilter, myJobs bool, attributes []string) (map[int]Attributes, error) {
 	req := NewRequest(OperationGetJobs, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.OperationAttributes["which-jobs"] = string(whichJobs)
-	req.OperationAttributes["my-jobs"] = myJobs
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributeWhichJobs] = string(whichJobs)
+	req.OperationAttributes[OperationAttributeMyJobs] = myJobs
 
 	if attributes == nil {
-		req.OperationAttributes["requested-attributes"] = DefaultJobAttributes
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = DefaultJobAttributes
 	} else {
-		req.OperationAttributes["requested-attributes"] = append(attributes, "job-id")
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = append(attributes, OperationAttributeJobID)
 	}
 
 	resp, err := c.SendRequest(c.getHttpUri("", nil), req)
@@ -321,7 +333,7 @@ func (c *IPPClient) GetJobs(printer string, whichJobs JobStateFilter, myJobs boo
 	jobIDMap := make(map[int]Attributes)
 
 	for _, jobAttributes := range resp.Jobs {
-		jobIDMap[jobAttributes["job-id"][0].Value.(int)] = jobAttributes
+		jobIDMap[jobAttributes[OperationAttributeJobID][0].Value.(int)] = jobAttributes
 	}
 
 	return jobIDMap, nil
@@ -329,8 +341,8 @@ func (c *IPPClient) GetJobs(printer string, whichJobs JobStateFilter, myJobs boo
 
 func (c *IPPClient) CancelJob(jobID int, purge bool) error {
 	req := NewRequest(OperationCancelJob, 1)
-	req.OperationAttributes["job-uri"] = c.getJobUri(jobID)
-	req.OperationAttributes["purge-jobs"] = purge
+	req.OperationAttributes[OperationAttributeJobURI] = c.getJobUri(jobID)
+	req.OperationAttributes[OperationAttributePurgeJobs] = purge
 
 	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req)
 	return err
@@ -338,8 +350,8 @@ func (c *IPPClient) CancelJob(jobID int, purge bool) error {
 
 func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
 	req := NewRequest(OperationCancelJobs, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.OperationAttributes["purge-jobs"] = purge
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributePurgeJobs] = purge
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -347,7 +359,7 @@ func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
 
 func (c *IPPClient) RestartJob(jobID int) error {
 	req := NewRequest(OperationRestartJob, 1)
-	req.OperationAttributes["job-uri"] = c.getJobUri(jobID)
+	req.OperationAttributes[OperationAttributeJobURI] = c.getJobUri(jobID)
 
 	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req)
 	return err
@@ -355,8 +367,8 @@ func (c *IPPClient) RestartJob(jobID int) error {
 
 func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
 	req := NewRequest(OperationRestartJob, 1)
-	req.OperationAttributes["job-uri"] = c.getJobUri(jobID)
-	req.JobAttributes["job-hold-until"] = holdUntil
+	req.OperationAttributes[OperationAttributeJobURI] = c.getJobUri(jobID)
+	req.JobAttributes[PrinterAttributeHoldJobUntil] = holdUntil
 
 	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req)
 	return err
@@ -370,14 +382,16 @@ func (c *IPPClient) PrintTestPage(printer string) (int, error) {
 	testPage.WriteString("printer-driver-version paper-size imageable-area job-id options time-at-creation")
 	testPage.WriteString("time-at-processing\n\n")
 
-	return c.Print([]Document{
+	return c.PrintDocuments([]Document{
 		{
 			Document: testPage,
 			Name:     "Test Page",
 			Size:     testPage.Len(),
 			MimeType: MimeTypePostscript,
 		},
-	}, printer, "Test Page", 1, DefaultJobPriority)
+	}, printer, map[string]interface{}{
+		OperationAttributeJobName: "Test Page",
+	})
 }
 
 func (c *IPPClient) TestConnection() error {

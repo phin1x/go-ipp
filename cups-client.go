@@ -22,7 +22,7 @@ func (c *CUPSClient) GetDevices() (map[string]Attributes, error) {
 	printerNameMap := make(map[string]Attributes)
 
 	for _, printerAttributes := range resp.Printers {
-		printerNameMap[printerAttributes["device-uri"][0].Value.(string)] = printerAttributes
+		printerNameMap[printerAttributes[PrinterAttributeDeviceURI][0].Value.(string)] = printerAttributes
 	}
 
 	return printerNameMap, nil
@@ -30,8 +30,8 @@ func (c *CUPSClient) GetDevices() (map[string]Attributes, error) {
 
 func (c *CUPSClient) MoveJob(jobID int, destPrinter string) error {
 	req := NewRequest(OperationCupsMoveJob, 1)
-	req.OperationAttributes["job-uri"] = c.getJobUri(jobID)
-	req.PrinterAttributes["job-printer-uri"] = c.getPrinterUri(destPrinter)
+	req.OperationAttributes[OperationAttributeJobURI] = c.getJobUri(jobID)
+	req.PrinterAttributes[PrinterAttributeJobPrinterURI] = c.getPrinterUri(destPrinter)
 
 	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req)
 	return err
@@ -39,8 +39,8 @@ func (c *CUPSClient) MoveJob(jobID int, destPrinter string) error {
 
 func (c *CUPSClient) MoveAllJob(srcPrinter, destPrinter string) error {
 	req := NewRequest(OperationCupsMoveJob, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(srcPrinter)
-	req.PrinterAttributes["job-printer-uri"] = c.getPrinterUri(destPrinter)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(srcPrinter)
+	req.PrinterAttributes[PrinterAttributeJobPrinterURI] = c.getPrinterUri(destPrinter)
 
 	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req)
 	return err
@@ -57,7 +57,7 @@ func (c *CUPSClient) GetPPDs() (map[string]Attributes, error) {
 	ppdNameMap := make(map[string]Attributes)
 
 	for _, printerAttributes := range resp.Printers {
-		ppdNameMap[printerAttributes["ppd-name"][0].Value.(string)] = printerAttributes
+		ppdNameMap[printerAttributes[OperationAttributePPDName][0].Value.(string)] = printerAttributes
 	}
 
 	return ppdNameMap, nil
@@ -65,7 +65,7 @@ func (c *CUPSClient) GetPPDs() (map[string]Attributes, error) {
 
 func (c *CUPSClient) AcceptJobs(printer string) error {
 	req := NewRequest(OperationCupsAcceptJobs, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -73,14 +73,14 @@ func (c *CUPSClient) AcceptJobs(printer string) error {
 
 func (c *CUPSClient) RejectJobs(printer string) error {
 	req := NewRequest(OperationCupsRejectJobs, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
 }
 
 func (c *CUPSClient) AddPrinterToClass(class, printer string) error {
-	attributes, err := c.GetPrinterAttributes(class, []string{"member-uris"})
+	attributes, err := c.GetPrinterAttributes(class, []string{PrinterAttributeMemberURIs})
 	if err != nil && !IsNotExistsError(err) {
 		return err
 	}
@@ -88,7 +88,7 @@ func (c *CUPSClient) AddPrinterToClass(class, printer string) error {
 	memberURIList := make([]string, 0)
 
 	if !IsNotExistsError(err) {
-		for _, member := range attributes["member-uris"] {
+		for _, member := range attributes[PrinterAttributeMemberURIs] {
 			memberString := strings.Split(member.Value.(string), "/")
 			printerName := memberString[len(memberString)-1]
 
@@ -103,22 +103,22 @@ func (c *CUPSClient) AddPrinterToClass(class, printer string) error {
 	memberURIList = append(memberURIList, c.getPrinterUri(printer))
 
 	req := NewRequest(OperationCupsAddModifyClass, 1)
-	req.OperationAttributes["printer-uri"] = c.getClassUri(class)
-	req.PrinterAttributes["member-uris"] = memberURIList
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getClassUri(class)
+	req.PrinterAttributes[PrinterAttributeMemberURIs] = memberURIList
 
 	_, err = c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
 }
 
 func (c *CUPSClient) DeletePrinterFromClass(class, printer string) error {
-	attributes, err := c.GetPrinterAttributes(class, []string{"member-uris"})
+	attributes, err := c.GetPrinterAttributes(class, []string{PrinterAttributeMemberURIs})
 	if err != nil {
 		return err
 	}
 
 	memberURIList := make([]string, 0)
 
-	for _, member := range attributes["member-uris"] {
+	for _, member := range attributes[PrinterAttributeMemberURIs] {
 		memberString := strings.Split(member.Value.(string), "/")
 		printerName := memberString[len(memberString)-1]
 
@@ -132,8 +132,8 @@ func (c *CUPSClient) DeletePrinterFromClass(class, printer string) error {
 	}
 
 	req := NewRequest(OperationCupsAddModifyClass, 1)
-	req.OperationAttributes["printer-uri"] = c.getClassUri(class)
-	req.PrinterAttributes["member-uris"] = memberURIList
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getClassUri(class)
+	req.PrinterAttributes[PrinterAttributeMemberURIs] = memberURIList
 
 	_, err = c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -141,7 +141,7 @@ func (c *CUPSClient) DeletePrinterFromClass(class, printer string) error {
 
 func (c *CUPSClient) DeleteClass(class string) error {
 	req := NewRequest(OperationCupsDeleteClass, 1)
-	req.OperationAttributes["printer-uri"] = c.getClassUri(class)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getClassUri(class)
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -149,14 +149,14 @@ func (c *CUPSClient) DeleteClass(class string) error {
 
 func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, errorPolicy ErrorPolicy, information, location string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(name)
-	req.OperationAttributes["ppd-name"] = ppd
-	req.OperationAttributes["printer-is-shared"] = shared
-	req.PrinterAttributes["printer-state-reason"] = "none"
-	req.PrinterAttributes["device-uri"] = deviceURI
-	req.PrinterAttributes["printer-info"] = information
-	req.PrinterAttributes["printer-location"] = location
-	req.PrinterAttributes["printer-error-policy"] = string(errorPolicy)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(name)
+	req.OperationAttributes[OperationAttributePPDName] = ppd
+	req.OperationAttributes[OperationAttributePrinterIsShared] = shared
+	req.PrinterAttributes[PrinterAttributePrinterStateReason] = "none"
+	req.PrinterAttributes[PrinterAttributeDeviceURI] = deviceURI
+	req.PrinterAttributes[PrinterAttributePrinterInfo] = information
+	req.PrinterAttributes[PrinterAttributePrinterLocation] = location
+	req.PrinterAttributes[PrinterAttributePrinterErrorPolicy] = string(errorPolicy)
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -164,8 +164,8 @@ func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, err
 
 func (c *CUPSClient) SetPrinterPPD(printer, ppd string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.OperationAttributes["ppd-name"] = ppd
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributePPDName] = ppd
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -173,8 +173,8 @@ func (c *CUPSClient) SetPrinterPPD(printer, ppd string) error {
 
 func (c *CUPSClient) SetPrinterDeviceURI(printer, deviceURI string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.PrinterAttributes["device-uri"] = deviceURI
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.PrinterAttributes[PrinterAttributeDeviceURI] = deviceURI
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -182,8 +182,8 @@ func (c *CUPSClient) SetPrinterDeviceURI(printer, deviceURI string) error {
 
 func (c *CUPSClient) SetPrinterIsShared(printer string, shared bool) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.OperationAttributes["printer-is-shared"] = shared
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributePrinterIsShared] = shared
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -191,8 +191,8 @@ func (c *CUPSClient) SetPrinterIsShared(printer string, shared bool) error {
 
 func (c *CUPSClient) SetPrinterErrorPolicy(printer string, errorPolicy ErrorPolicy) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.PrinterAttributes["printer-error-policy"] = string(errorPolicy)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.PrinterAttributes[PrinterAttributePrinterErrorPolicy] = string(errorPolicy)
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -200,8 +200,8 @@ func (c *CUPSClient) SetPrinterErrorPolicy(printer string, errorPolicy ErrorPoli
 
 func (c *CUPSClient) SetPrinterInformation(printer, information string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.PrinterAttributes["printer-info"] = information
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.PrinterAttributes[PrinterAttributePrinterInfo] = information
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -209,8 +209,8 @@ func (c *CUPSClient) SetPrinterInformation(printer, information string) error {
 
 func (c *CUPSClient) SetPrinterLocation(printer, location string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
-	req.PrinterAttributes["printer-location"] = location
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	req.PrinterAttributes[PrinterAttributePrinterLocation] = location
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -218,7 +218,7 @@ func (c *CUPSClient) SetPrinterLocation(printer, location string) error {
 
 func (c *CUPSClient) DeletePrinter(printer string) error {
 	req := NewRequest(OperationCupsDeletePrinter, 1)
-	req.OperationAttributes["printer-uri"] = c.getPrinterUri(printer)
+	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 
 	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
 	return err
@@ -228,9 +228,9 @@ func (c *CUPSClient) GetPrinters(attributes []string) (map[string]Attributes, er
 	req := NewRequest(OperationCupsGetPrinters, 1)
 
 	if attributes == nil {
-		req.OperationAttributes["requested-attributes"] = DefaultPrinterAttributes
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = DefaultPrinterAttributes
 	} else {
-		req.OperationAttributes["requested-attributes"] = append(attributes, "printer-name")
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = append(attributes, PrinterAttributePrinterName)
 	}
 
 	resp, err := c.SendRequest(c.getHttpUri("", nil), req)
@@ -241,7 +241,7 @@ func (c *CUPSClient) GetPrinters(attributes []string) (map[string]Attributes, er
 	printerNameMap := make(map[string]Attributes)
 
 	for _, printerAttributes := range resp.Printers {
-		printerNameMap[printerAttributes["printer-name"][0].Value.(string)] = printerAttributes
+		printerNameMap[printerAttributes[PrinterAttributePrinterName][0].Value.(string)] = printerAttributes
 	}
 
 	return printerNameMap, nil
@@ -251,9 +251,9 @@ func (c *CUPSClient) GetClasses(attributes []string) (map[string]Attributes, err
 	req := NewRequest(OperationCupsGetClasses, 1)
 
 	if attributes == nil {
-		req.OperationAttributes["requested-attributes"] = DefaultClassAttributes
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = DefaultClassAttributes
 	} else {
-		req.OperationAttributes["requested-attributes"] = append(attributes, "printer-name")
+		req.OperationAttributes[OperationAttributeRequestedAttributes] = append(attributes, PrinterAttributePrinterName)
 	}
 
 	resp, err := c.SendRequest(c.getHttpUri("", nil), req)
@@ -264,7 +264,7 @@ func (c *CUPSClient) GetClasses(attributes []string) (map[string]Attributes, err
 	printerNameMap := make(map[string]Attributes)
 
 	for _, printerAttributes := range resp.Printers {
-		printerNameMap[printerAttributes["printer-name"][0].Value.(string)] = printerAttributes
+		printerNameMap[printerAttributes[PrinterAttributePrinterName][0].Value.(string)] = printerAttributes
 	}
 
 	return printerNameMap, nil

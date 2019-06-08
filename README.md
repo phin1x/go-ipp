@@ -24,7 +24,7 @@ go get -h github.com/phin1x/go-ipp
 Print a file
 ```go
 client := ipp.NewIPPClient("printserver", 631, "user", "password", true)
-client.PrintFile("/path/to/file", "my-printer", 1, ipp.DefaultJobPriority)
+client.PrintFile("/path/to/file", "my-printer", map[string]interface{})
 ```
 
 ## Licence

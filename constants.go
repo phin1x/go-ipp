@@ -296,6 +296,37 @@ const (
 	MimeTypeOctetStream = "application/octet-stream"
 )
 
+const (
+	OperationAttributeCopies              string = "copies"
+	OperationAttributeDocumentFormat             = "document-format"
+	OperationAttributeDocumentName               = "document-name"
+	OperationAttributeJobID                      = "job-id"
+	OperationAttributeJobName                    = "job-name"
+	OperationAttributeJobPriority                = "job-priority"
+	OperationAttributeJobURI                     = "job-uri"
+	OperationAttributeLastDocument               = "last-document"
+	OperationAttributeMyJobs                     = "my-jobs"
+	OperationAttributePPDName                    = "ppd-name"
+	OperationAttributePrinterIsShared            = "printer-is-shared"
+	OperationAttributePrinterURI                 = "printer-uri"
+	OperationAttributePurgeJobs                  = "purge-jobs"
+	OperationAttributeRequestedAttributes        = "requested-attributes"
+	OperationAttributeRequestingUserName         = "requesting-user-name"
+	OperationAttributeWhichJobs                  = "which-jobs"
+)
+
+const (
+	PrinterAttributeDeviceURI          string = "device-uri"
+	PrinterAttributeHoldJobUntil              = "job-hold-until"
+	PrinterAttributePrinterErrorPolicy        = "printer-error-policy"
+	PrinterAttributePrinterInfo               = "printer-info"
+	PrinterAttributePrinterLocation           = "printer-location"
+	PrinterAttributePrinterName               = "printer-name"
+	PrinterAttributePrinterStateReason        = "printer-state-reason"
+	PrinterAttributeJobPrinterURI             = "job-printer-uri"
+	PrinterAttributeMemberURIs                = "member-uris"
+)
+
 var (
 	DefaultClassAttributes   = []string{"printer-name", "member-names"}
 	DefaultPrinterAttributes = []string{"printer-name", "printer-type", "printer-location", "printer-info",

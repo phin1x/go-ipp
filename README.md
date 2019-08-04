@@ -9,7 +9,7 @@
 
 To get the package, execute:
 ```
-go get -h github.com/phin1x/go-ipp
+go get -u github.com/phin1x/go-ipp
 ```
 
 ## Features

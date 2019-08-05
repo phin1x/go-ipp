@@ -95,11 +95,11 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 		startByte := startByteSlice[0]
 
 		// check if attributes are completed
-		if uint8(startByte) == TagEnd {
+		if startByte == TagEnd {
 			break
 		}
 
-		if uint8(startByte) == TagOperation {
+		if startByte == TagOperation {
 			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
 				appendAttribute(resp, tag, tempAttributes)
 				tempAttributes = make(Attributes)
@@ -109,7 +109,7 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 			tagSet = true
 		}
 
-		if uint8(startByte) == TagJob {
+		if startByte == TagJob {
 			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
 				appendAttribute(resp, tag, tempAttributes)
 				tempAttributes = make(Attributes)
@@ -119,7 +119,7 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 			tagSet = true
 		}
 
-		if uint8(startByte) == TagPrinter {
+		if startByte == TagPrinter {
 			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
 				appendAttribute(resp, tag, tempAttributes)
 				tempAttributes = make(Attributes)

@@ -166,7 +166,7 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 		req.File = doc.Document
 		req.FileSize = doc.Size
 
-		resp, err = c.SendRequest(c.getHttpUri("printers", printer), req)
+		_, err = c.SendRequest(c.getHttpUri("printers", printer), req)
 		if err != nil {
 			return -1, err
 		}

@@ -273,6 +273,7 @@ type JobStateFilter string
 const (
 	JobStateFilterNotCompleted = "not-completed"
 	JobStateFilterCompleted    = "completed"
+	JobStateFilterAll          = "all"
 )
 
 type ErrorPolicy string

@@ -20,7 +20,7 @@ type Response struct {
 	Printers            []Attributes
 	Jobs                []Attributes
 
-	Data []byte
+	data io.Writer
 }
 
 func (r *Response) CheckForErrors() error {
@@ -45,7 +45,7 @@ func NewResponseDecoder(r io.Reader) *ResponseDecoder {
 	}
 }
 
-func (d *ResponseDecoder) Decode() (*Response, error) {
+func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 	/*
 	   1 byte: Protocol Major Version - b
 	   1 byte: Protocol Minor Version - b
@@ -57,6 +57,7 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 	*/
 
 	resp := new(Response)
+	resp.data = data
 
 	// wrap the reader so we have more functionality
 	//reader := bufio.NewReader(d.reader)
@@ -155,8 +156,10 @@ func (d *ResponseDecoder) Decode() (*Response, error) {
 		appendAttribute(resp, tag, tempAttributes)
 	}
 
-	if _, err := d.reader.Read(resp.Data); err != nil {
-		return nil, err
+	if resp.data != nil {
+		if _, err := io.Copy(resp.data, d.reader); err != nil {
+			return nil, err
+		}
 	}
 
 	if resp.StatusCode != 0 {

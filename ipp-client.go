@@ -78,7 +78,7 @@ func (c *IPPClient) getClassUri(printer string) string {
 	return fmt.Sprintf("ipp://localhost/classes/%s", printer)
 }
 
-func (c *IPPClient) SendRequest(url string, req *Request) (*Response, error) {
+func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData io.Writer) (*Response, error) {
 	payload, err := req.Encode()
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (c *IPPClient) SendRequest(url string, req *Request) (*Response, error) {
 	//read the response into a temp buffer due to some wired EOF errors
 	httpBody, _ := ioutil.ReadAll(httpResp.Body)
 	//fmt.Println(httpBody)
-	return NewResponseDecoder(bytes.NewBuffer(httpBody)).Decode()
+	return NewResponseDecoder(bytes.NewBuffer(httpBody)).Decode(additionalResponseData)
 
 	//return NewResponseDecoder(httpResp.Body).Decode()
 }
@@ -142,7 +142,7 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 		req.JobAttributes[key] = value
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req)
+	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return -1, err
 	}
@@ -166,7 +166,7 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 		req.File = doc.Document
 		req.FileSize = doc.Size
 
-		_, err = c.SendRequest(c.getHttpUri("printers", printer), req)
+		_, err = c.SendRequest(c.getHttpUri("printers", printer), req, nil)
 		if err != nil {
 			return -1, err
 		}
@@ -212,7 +212,7 @@ func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[str
 	req.File = doc.Document
 	req.FileSize = doc.Size
 
-	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req)
+	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return -1, err
 	}
@@ -263,7 +263,7 @@ func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (A
 		req.OperationAttributes[OperationAttributeRequestedAttributes] = attributes
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req)
+	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +279,7 @@ func (c *IPPClient) ResumePrinter(printer string) error {
 	req := NewRequest(OperationResumePrinter, 1)
 	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
+	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -287,7 +287,7 @@ func (c *IPPClient) PausePrinter(printer string) error {
 	req := NewRequest(OperationPausePrinter, 1)
 	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
+	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -301,7 +301,7 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 		req.OperationAttributes[OperationAttributeRequestedAttributes] = attributes
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("jobs", jobID), req)
+	resp, err := c.SendRequest(c.getHttpUri("jobs", jobID), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -313,11 +313,18 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 	return resp.Printers[0], nil
 }
 
-func (c *IPPClient) GetJobs(printer string, whichJobs JobStateFilter, myJobs bool, attributes []string) (map[int]Attributes, error) {
+func (c *IPPClient) GetJobs(printer, class string, whichJobs JobStateFilter, myJobs bool, attributes []string) (map[int]Attributes, error) {
 	req := NewRequest(OperationGetJobs, 1)
-	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 	req.OperationAttributes[OperationAttributeWhichJobs] = string(whichJobs)
 	req.OperationAttributes[OperationAttributeMyJobs] = myJobs
+
+	if printer != "" {
+		req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
+	} else if class != "" {
+		req.OperationAttributes[OperationAttributePrinterURI] = c.getClassUri(printer)
+	} else {
+		req.OperationAttributes[OperationAttributePrinterURI] = "ipp://localhost/"
+	}
 
 	if attributes == nil {
 		req.OperationAttributes[OperationAttributeRequestedAttributes] = DefaultJobAttributes
@@ -325,7 +332,7 @@ func (c *IPPClient) GetJobs(printer string, whichJobs JobStateFilter, myJobs boo
 		req.OperationAttributes[OperationAttributeRequestedAttributes] = append(attributes, OperationAttributeJobID)
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("", nil), req)
+	resp, err := c.SendRequest(c.getHttpUri("", nil), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -344,7 +351,7 @@ func (c *IPPClient) CancelJob(jobID int, purge bool) error {
 	req.OperationAttributes[OperationAttributeJobURI] = c.getJobUri(jobID)
 	req.OperationAttributes[OperationAttributePurgeJobs] = purge
 
-	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req)
+	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req, nil)
 	return err
 }
 
@@ -353,7 +360,7 @@ func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
 	req.OperationAttributes[OperationAttributePrinterURI] = c.getPrinterUri(printer)
 	req.OperationAttributes[OperationAttributePurgeJobs] = purge
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req)
+	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -361,7 +368,7 @@ func (c *IPPClient) RestartJob(jobID int) error {
 	req := NewRequest(OperationRestartJob, 1)
 	req.OperationAttributes[OperationAttributeJobURI] = c.getJobUri(jobID)
 
-	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req)
+	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req, nil)
 	return err
 }
 
@@ -370,7 +377,7 @@ func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
 	req.OperationAttributes[OperationAttributeJobURI] = c.getJobUri(jobID)
 	req.JobAttributes[PrinterAttributeHoldJobUntil] = holdUntil
 
-	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req)
+	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req, nil)
 	return err
 }
 

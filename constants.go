@@ -314,6 +314,8 @@ const (
 	OperationAttributeRequestedAttributes        = "requested-attributes"
 	OperationAttributeRequestingUserName         = "requesting-user-name"
 	OperationAttributeWhichJobs                  = "which-jobs"
+	OperationAttributeFirstJobID                 = "first-job-id"
+	OperationAttributeLimit                      = "limit"
 )
 
 const (

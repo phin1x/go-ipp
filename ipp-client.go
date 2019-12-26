@@ -313,7 +313,7 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 	return resp.Printers[0], nil
 }
 
-func (c *IPPClient) GetJobs(printer, class string, whichJobs JobStateFilter, myJobs bool, attributes []string) (map[int]Attributes, error) {
+func (c *IPPClient) GetJobs(printer, class string, whichJobs JobStateFilter, myJobs bool, firstJobId, limit int, attributes []string) (map[int]Attributes, error) {
 	req := NewRequest(OperationGetJobs, 1)
 	req.OperationAttributes[OperationAttributeWhichJobs] = string(whichJobs)
 	req.OperationAttributes[OperationAttributeMyJobs] = myJobs
@@ -324,6 +324,18 @@ func (c *IPPClient) GetJobs(printer, class string, whichJobs JobStateFilter, myJ
 		req.OperationAttributes[OperationAttributePrinterURI] = c.getClassUri(printer)
 	} else {
 		req.OperationAttributes[OperationAttributePrinterURI] = "ipp://localhost/"
+	}
+
+	if firstJobId > 0 {
+		req.OperationAttributes[OperationAttributeFirstJobID] = firstJobId
+	}
+
+	if limit > 0 {
+		req.OperationAttributes[OperationAttributeLimit] = limit
+	}
+
+	if myJobs {
+		req.OperationAttributes[OperationAttributeRequestingUserName] = c.username
 	}
 
 	if attributes == nil {

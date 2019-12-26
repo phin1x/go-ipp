@@ -379,5 +379,6 @@ var (
 		"requested-attributes":        TagKeyword,
 		"requesting-user-name":        TagName,
 		"which-jobs":                  TagKeyword,
+		"first-job-id":                TagInteger,
 	}
 )

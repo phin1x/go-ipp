@@ -369,6 +369,7 @@ var (
 		"print-quality":               TagEnum,
 		"printer-error-policy":        TagName,
 		"printer-info":                TagText,
+		"printer-is-accepting-jobs":   TagBoolean,
 		"printer-is-shared":           TagBoolean,
 		"printer-location":            TagText,
 		"printer-resolution":          TagResolution,

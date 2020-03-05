@@ -21,7 +21,7 @@ func (c *CUPSClient) GetDevices() (map[string]Attributes, error) {
 
 	printerNameMap := make(map[string]Attributes)
 
-	for _, printerAttributes := range resp.Printers {
+	for _, printerAttributes := range resp.PrinterAttributes {
 		printerNameMap[printerAttributes[PrinterAttributeDeviceURI][0].Value.(string)] = printerAttributes
 	}
 
@@ -56,7 +56,7 @@ func (c *CUPSClient) GetPPDs() (map[string]Attributes, error) {
 
 	ppdNameMap := make(map[string]Attributes)
 
-	for _, printerAttributes := range resp.Printers {
+	for _, printerAttributes := range resp.PrinterAttributes {
 		ppdNameMap[printerAttributes[OperationAttributePPDName][0].Value.(string)] = printerAttributes
 	}
 
@@ -240,7 +240,7 @@ func (c *CUPSClient) GetPrinters(attributes []string) (map[string]Attributes, er
 
 	printerNameMap := make(map[string]Attributes)
 
-	for _, printerAttributes := range resp.Printers {
+	for _, printerAttributes := range resp.PrinterAttributes {
 		printerNameMap[printerAttributes[PrinterAttributePrinterName][0].Value.(string)] = printerAttributes
 	}
 
@@ -263,7 +263,7 @@ func (c *CUPSClient) GetClasses(attributes []string) (map[string]Attributes, err
 
 	printerNameMap := make(map[string]Attributes)
 
-	for _, printerAttributes := range resp.Printers {
+	for _, printerAttributes := range resp.PrinterAttributes {
 		printerNameMap[printerAttributes[PrinterAttributePrinterName][0].Value.(string)] = printerAttributes
 	}
 

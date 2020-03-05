@@ -1,6 +1,7 @@
 package ipp
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -17,10 +18,8 @@ type Response struct {
 	RequestId  int32
 
 	OperationAttributes Attributes
-	Printers            []Attributes
-	Jobs                []Attributes
-
-	data io.Writer
+	PrinterAttributes   []Attributes
+	JobAttributes       []Attributes
 }
 
 func (r *Response) CheckForErrors() error {
@@ -33,6 +32,138 @@ func (r *Response) CheckForErrors() error {
 	}
 
 	return nil
+}
+
+func NewResponse(statusCode uint16, reqID int32) *Response {
+	return &Response{
+		ProtocolVersionMajor: ProtocolVersionMajor,
+		ProtocolVersionMinor: ProtocolVersionMinor,
+		StatusCode:           statusCode,
+		RequestId:            reqID,
+		OperationAttributes:  make(Attributes),
+		PrinterAttributes:    make([]Attributes, 0),
+		JobAttributes:        make([]Attributes, 0),
+	}
+}
+
+func (r *Response) Encode(data io.Writer) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	enc := NewAttributeEncoder(buf)
+
+	if err := binary.Write(buf, binary.BigEndian, r.ProtocolVersionMajor); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(buf, binary.BigEndian, r.ProtocolVersionMinor); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(buf, binary.BigEndian, r.StatusCode); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(buf, binary.BigEndian, r.RequestId); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(buf, binary.BigEndian, int8(TagOperation)); err != nil {
+		return nil, err
+	}
+
+	if err := enc.Encode("attributes-charset", Charset); err != nil {
+		return nil, err
+	}
+
+	if err := enc.Encode("attributes-natural-language", CharsetLanguage); err != nil {
+		return nil, err
+	}
+
+	if len(r.OperationAttributes) > 0 {
+		for name, attr := range r.OperationAttributes {
+			if len(attr) == 0 {
+				continue
+			}
+
+			values := make([]interface{}, len(r.OperationAttributes))
+			for i, v :=  range attr {
+				values[i] = v.Value
+			}
+
+			if len(values) == 1 {
+				if err := enc.Encode(name, values[0]); err != nil {
+					return nil, err
+				}
+			} else {
+				if err := enc.Encode(name, values); err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	if len(r.PrinterAttributes) > 0 {
+		for _, printerAttr := range r.PrinterAttributes {
+			if err := binary.Write(buf, binary.BigEndian, int8(TagPrinter)); err != nil {
+				return nil, err
+			}
+
+			for name, attr := range printerAttr {
+				if len(attr) == 0 {
+					continue
+				}
+
+				values := make([]interface{}, len(printerAttr))
+				for i, v :=  range attr {
+					values[i] = v.Value
+				}
+
+				if len(values) == 1 {
+					if err := enc.Encode(name, values[0]); err != nil {
+						return nil, err
+					}
+				} else {
+					if err := enc.Encode(name, values); err != nil {
+						return nil, err
+					}
+				}
+			}
+		}
+	}
+
+	if len(r.JobAttributes) > 0 {
+		for _, jobAttr := range r.JobAttributes {
+			if err := binary.Write(buf, binary.BigEndian, int8(TagJob)); err != nil {
+				return nil, err
+			}
+
+			for name, attr := range jobAttr {
+				if len(attr) == 0 {
+					continue
+				}
+
+				values := make([]interface{}, len(jobAttr))
+				for i, v :=  range attr {
+					values[i] = v.Value
+				}
+
+				if len(values) == 1 {
+					if err := enc.Encode(name, values[0]); err != nil {
+						return nil, err
+					}
+				} else {
+					if err := enc.Encode(name, values); err != nil {
+						return nil, err
+					}
+				}
+			}
+		}
+	}
+
+	if err := binary.Write(buf, binary.BigEndian, int8(TagEnd)); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 type ResponseDecoder struct {
@@ -57,10 +188,9 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 	*/
 
 	resp := new(Response)
-	resp.data = data
 
 	// wrap the reader so we have more functionality
-	//reader := bufio.NewReader(d.reader)
+	// reader := bufio.NewReader(d.reader)
 
 	if err := binary.Read(d.reader, binary.BigEndian, &resp.ProtocolVersionMajor); err != nil {
 		return nil, err
@@ -102,7 +232,7 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 
 		if startByte == TagOperation {
 			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
-				appendAttribute(resp, tag, tempAttributes)
+				appendAttributeToResponse(resp, tag, tempAttributes)
 				tempAttributes = make(Attributes)
 			}
 
@@ -112,7 +242,7 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 
 		if startByte == TagJob {
 			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
-				appendAttribute(resp, tag, tempAttributes)
+				appendAttributeToResponse(resp, tag, tempAttributes)
 				tempAttributes = make(Attributes)
 			}
 
@@ -122,7 +252,7 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 
 		if startByte == TagPrinter {
 			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
-				appendAttribute(resp, tag, tempAttributes)
+				appendAttributeToResponse(resp, tag, tempAttributes)
 				tempAttributes = make(Attributes)
 			}
 
@@ -153,11 +283,11 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 	}
 
 	if len(tempAttributes) > 0 && tag != TagCupsInvalid {
-		appendAttribute(resp, tag, tempAttributes)
+		appendAttributeToResponse(resp, tag, tempAttributes)
 	}
 
-	if resp.data != nil {
-		if _, err := io.Copy(resp.data, d.reader); err != nil {
+	if data != nil {
+		if _, err := io.Copy(data, d.reader); err != nil {
 			return nil, err
 		}
 	}
@@ -169,13 +299,13 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 	return resp, nil
 }
 
-func appendAttribute(resp *Response, tag Tag, attr map[string][]Attribute) {
+func appendAttributeToResponse(resp *Response, tag Tag, attr map[string][]Attribute) {
 	switch tag {
 	case TagOperation:
 		resp.OperationAttributes = attr
 	case TagPrinter:
-		resp.Printers = append(resp.Printers, attr)
+		resp.PrinterAttributes = append(resp.PrinterAttributes, attr)
 	case TagJob:
-		resp.Jobs = append(resp.Jobs, attr)
+		resp.JobAttributes = append(resp.JobAttributes, attr)
 	}
 }

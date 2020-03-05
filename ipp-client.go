@@ -147,11 +147,11 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 		return -1, err
 	}
 
-	if len(resp.Jobs) == 0 {
+	if len(resp.JobAttributes) == 0 {
 		return 0, errors.New("server doesn't returned a job id")
 	}
 
-	jobID := resp.Jobs[0][OperationAttributeJobID][0].Value.(int)
+	jobID := resp.JobAttributes[0][OperationAttributeJobID][0].Value.(int)
 
 	documentCount := len(docs) - 1
 
@@ -217,11 +217,11 @@ func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[str
 		return -1, err
 	}
 
-	if len(resp.Jobs) == 0 {
+	if len(resp.JobAttributes) == 0 {
 		return 0, errors.New("server doesn't returned a job id")
 	}
 
-	jobID := resp.Jobs[0][OperationAttributeJobID][0].Value.(int)
+	jobID := resp.JobAttributes[0][OperationAttributeJobID][0].Value.(int)
 
 	return jobID, nil
 }
@@ -268,11 +268,11 @@ func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (A
 		return nil, err
 	}
 
-	if len(resp.Printers) == 0 {
+	if len(resp.PrinterAttributes) == 0 {
 		return nil, errors.New("server doesn't return any printer attributes")
 	}
 
-	return resp.Printers[0], nil
+	return resp.PrinterAttributes[0], nil
 }
 
 func (c *IPPClient) ResumePrinter(printer string) error {
@@ -306,11 +306,11 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 		return nil, err
 	}
 
-	if len(resp.Printers) == 0 {
+	if len(resp.PrinterAttributes) == 0 {
 		return nil, errors.New("server doesn't return any job attributes")
 	}
 
-	return resp.Printers[0], nil
+	return resp.PrinterAttributes[0], nil
 }
 
 func (c *IPPClient) GetJobs(printer, class string, whichJobs JobStateFilter, myJobs bool, firstJobId, limit int, attributes []string) (map[int]Attributes, error) {
@@ -351,7 +351,7 @@ func (c *IPPClient) GetJobs(printer, class string, whichJobs JobStateFilter, myJ
 
 	jobIDMap := make(map[int]Attributes)
 
-	for _, jobAttributes := range resp.Jobs {
+	for _, jobAttributes := range resp.JobAttributes {
 		jobIDMap[jobAttributes[OperationAttributeJobID][0].Value.(int)] = jobAttributes
 	}
 

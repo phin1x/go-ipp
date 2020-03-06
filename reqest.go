@@ -117,19 +117,19 @@ func NewRequestDecoder(r io.Reader) *RequestDecoder {
 func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 	req := new(Request)
 
-	if err := binary.Read(d.reader, binary.BigEndian, req.ProtocolVersionMajor); err != nil {
+	if err := binary.Read(d.reader, binary.BigEndian, &req.ProtocolVersionMajor); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(d.reader, binary.BigEndian, req.ProtocolVersionMinor); err != nil {
+	if err := binary.Read(d.reader, binary.BigEndian, &req.ProtocolVersionMinor); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(d.reader, binary.BigEndian, req.Operation); err != nil {
+	if err := binary.Read(d.reader, binary.BigEndian, &req.Operation); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(d.reader, binary.BigEndian, req.RequestId); err != nil {
+	if err := binary.Read(d.reader, binary.BigEndian, &req.RequestId); err != nil {
 		return nil, err
 	}
 
@@ -155,16 +155,27 @@ func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 		}
 
 		if startByte == TagOperation {
+			if req.OperationAttributes == nil {
+				req.OperationAttributes = make(map[string]interface{})
+			}
+
 			tag = TagOperation
 			tagSet = true
+
 		}
 
 		if startByte == TagJob {
+			if req.JobAttributes == nil {
+				req.JobAttributes = make(map[string]interface{})
+			}
 			tag = TagJob
 			tagSet = true
 		}
 
 		if startByte == TagPrinter {
+			if req.PrinterAttributes == nil {
+				req.PrinterAttributes = make(map[string]interface{})
+			}
 			tag = TagPrinter
 			tagSet = true
 		}

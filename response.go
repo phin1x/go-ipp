@@ -85,7 +85,7 @@ func (r *Response) Encode(data io.Writer) ([]byte, error) {
 			}
 
 			values := make([]interface{}, len(r.OperationAttributes))
-			for i, v :=  range attr {
+			for i, v := range attr {
 				values[i] = v.Value
 			}
 
@@ -113,7 +113,7 @@ func (r *Response) Encode(data io.Writer) ([]byte, error) {
 				}
 
 				values := make([]interface{}, len(printerAttr))
-				for i, v :=  range attr {
+				for i, v := range attr {
 					values[i] = v.Value
 				}
 
@@ -142,7 +142,7 @@ func (r *Response) Encode(data io.Writer) ([]byte, error) {
 				}
 
 				values := make([]interface{}, len(jobAttr))
-				for i, v :=  range attr {
+				for i, v := range attr {
 					values[i] = v.Value
 				}
 

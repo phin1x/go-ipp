@@ -47,7 +47,7 @@ func (r *Request) Encode() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := binary.Write(buf, binary.BigEndian, r.Operation); err != nil {
+	if err := binary.Write(buf, binary.BigEndian, int16(r.Operation)); err != nil {
 		return nil, err
 	}
 

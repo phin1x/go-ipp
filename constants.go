@@ -295,6 +295,8 @@ const (
 
 	MimeTypePostscript  = "application/postscript"
 	MimeTypeOctetStream = "application/octet-stream"
+
+	ContentTypeIPP = "application/ipp"
 )
 
 const (

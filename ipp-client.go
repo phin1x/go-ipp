@@ -14,10 +14,6 @@ import (
 	"strconv"
 )
 
-const (
-	ippContentType = "application/ipp"
-)
-
 type Document struct {
 	Document io.Reader
 	Size     int
@@ -101,7 +97,7 @@ func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData
 	}
 
 	httpReq.Header.Set("Content-Length", strconv.Itoa(size))
-	httpReq.Header.Set("Content-Type", ippContentType)
+	httpReq.Header.Set("Content-Type", ContentTypeIPP)
 
 	if c.username != "" && c.password != "" {
 		httpReq.SetBasicAuth(c.username, c.password)
@@ -117,12 +113,12 @@ func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData
 		return nil, fmt.Errorf("ipp server returned with http status code %d", httpResp.StatusCode)
 	}
 
-	//read the response into a temp buffer due to some wired EOF errors
+	// read the response into a temp buffer due to some wired EOF errors
 	httpBody, _ := ioutil.ReadAll(httpResp.Body)
-	//fmt.Println(httpBody)
+	// fmt.Println(httpBody)
 	return NewResponseDecoder(bytes.NewBuffer(httpBody)).Decode(additionalResponseData)
 
-	//return NewResponseDecoder(httpResp.Body).Decode()
+	// return NewResponseDecoder(httpResp.Body).Decode()
 }
 
 // Print one or more `Document`s using IPP `Create-Job` followed by `Send-Document` request(s).

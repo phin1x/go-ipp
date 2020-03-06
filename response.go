@@ -220,6 +220,11 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 	// decode attribute buffer
 	for {
 		if _, err := d.reader.Read(startByteSlice); err != nil {
+			// when we read from a stream, we may get an EOF if we want to read the end tag
+			// all data should be read and we can ignore the error
+			if err == io.EOF {
+				break
+			}
 			return nil, err
 		}
 

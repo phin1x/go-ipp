@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -114,11 +113,10 @@ func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData
 	}
 
 	// read the response into a temp buffer due to some wired EOF errors
-	httpBody, _ := ioutil.ReadAll(httpResp.Body)
-	// fmt.Println(httpBody)
-	return NewResponseDecoder(bytes.NewBuffer(httpBody)).Decode(additionalResponseData)
+	// httpBody, _ := ioutil.ReadAll(httpResp.Body)
+	// return NewResponseDecoder(bytes.NewBuffer(httpBody)).Decode(additionalResponseData)
 
-	// return NewResponseDecoder(httpResp.Body).Decode()
+	return NewResponseDecoder(httpResp.Body).Decode(additionalResponseData)
 }
 
 // Print one or more `Document`s using IPP `Create-Job` followed by `Send-Document` request(s).

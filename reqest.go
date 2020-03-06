@@ -147,7 +147,7 @@ func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 			// when we read from a stream, we may get an EOF if we want to read the end tag
 			// all data should be read and we can ignore the error
 			if err == io.EOF {
-				break
+				return req, nil
 			}
 			return nil, err
 		}

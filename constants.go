@@ -208,7 +208,7 @@ const (
 	TagUnsupportedValue      = 0x10
 	TagDefault               = 0x11
 	TagUnknown               = 0x12
-	TagNoValue               = 0x013
+	TagNoValue               = 0x13
 	TagNotSettable           = 0x15
 	TagDeleteAttr            = 0x16
 	TagAdminDefine           = 0x17
@@ -300,88 +300,112 @@ const (
 )
 
 const (
-	OperationAttributeCopies              string = "copies"
-	OperationAttributeDocumentFormat             = "document-format"
-	OperationAttributeDocumentName               = "document-name"
-	OperationAttributeJobID                      = "job-id"
-	OperationAttributeJobName                    = "job-name"
-	OperationAttributeJobPriority                = "job-priority"
-	OperationAttributeJobURI                     = "job-uri"
-	OperationAttributeLastDocument               = "last-document"
-	OperationAttributeMyJobs                     = "my-jobs"
-	OperationAttributePPDName                    = "ppd-name"
-	OperationAttributePrinterIsShared            = "printer-is-shared"
-	OperationAttributePrinterURI                 = "printer-uri"
-	OperationAttributePurgeJobs                  = "purge-jobs"
-	OperationAttributeRequestedAttributes        = "requested-attributes"
-	OperationAttributeRequestingUserName         = "requesting-user-name"
-	OperationAttributeWhichJobs                  = "which-jobs"
-	OperationAttributeFirstJobID                 = "first-job-id"
-	OperationAttributeLimit                      = "limit"
-)
-
-const (
-	PrinterAttributeDeviceURI          string = "device-uri"
-	PrinterAttributeHoldJobUntil              = "job-hold-until"
-	PrinterAttributePrinterErrorPolicy        = "printer-error-policy"
-	PrinterAttributePrinterInfo               = "printer-info"
-	PrinterAttributePrinterLocation           = "printer-location"
-	PrinterAttributePrinterName               = "printer-name"
-	PrinterAttributePrinterStateReason        = "printer-state-reason"
-	PrinterAttributeJobPrinterURI             = "job-printer-uri"
-	PrinterAttributeMemberURIs                = "member-uris"
+	AttributeCopies                 string = "copies"
+	AttributeDocumentFormat                = "document-format"
+	AttributeDocumentName                  = "document-name"
+	AttributeJobID                         = "job-id"
+	AttributeJobName                       = "job-name"
+	AttributeJobPriority                   = "job-priority"
+	AttributeJobURI                        = "job-uri"
+	AttributeLastDocument                  = "last-document"
+	AttributeMyJobs                        = "my-jobs"
+	AttributePPDName                       = "ppd-name"
+	AttributePrinterIsShared               = "printer-is-shared"
+	AttributePrinterURI                    = "printer-uri"
+	AttributePurgeJobs                     = "purge-jobs"
+	AttributeRequestedAttributes           = "requested-attributes"
+	AttributeRequestingUserName            = "requesting-user-name"
+	AttributeWhichJobs                     = "which-jobs"
+	AttributeFirstJobID                    = "first-job-id"
+	AttributeLimit                         = "limit"
+	AttributeStatusMessage                 = "status-message"
+	AttributeCharset                       = "attributes-charset"
+	AttributeNaturalLanguage               = "attributes-natural-language"
+	AttributeDeviceURI                     = "device-uri"
+	AttributeHoldJobUntil                  = "job-hold-until"
+	AttributePrinterErrorPolicy            = "printer-error-policy"
+	AttributePrinterInfo                   = "printer-info"
+	AttributePrinterLocation               = "printer-location"
+	AttributePrinterName                   = "printer-name"
+	AttributePrinterStateReason            = "printer-state-reason"
+	AttributeJobPrinterURI                 = "job-printer-uri"
+	AttributeMemberURIs                    = "member-uris"
+	AttributeDocumentNumber                = "document-number"
+	AttributeDocumentState                 = "document-state"
+	AttributeFinishings                    = "finishings"
+	AttributeJobHoldUntil                  = "hold-job-until"
+	AttributeJobSheets                     = "job-sheets"
+	AttributeJobState                      = "job-state"
+	AttributeJobStateReason                = "job-state-reason"
+	AttributeMedia                         = "media"
+	AttributeNumberUp                      = "number-up"
+	AttributeOrientationRequested          = "orientation-requested"
+	AttributePrintQuality                  = "print-quality"
+	AttributePrinterIsAcceptingJobs        = "printer-is-accepting-jobs"
+	AttributePrinterResolution             = "printer-resolution"
+	AttributePrinterState                  = "printer-state"
+	AttributeMemberNames                   = "member-names"
+	AttributePrinterType                   = "printer-type"
+	AttributePrinterMarkAndModel           = "printer-make-and-model"
+	AttributePrinterStateMessage           = "printer-state-message"
+	AttributePrinterUriSupported           = "printer-uri-supported"
+	AttributeJobMediaProgress              = "job-media-progress"
+	AttributeJobKilobyteOctets             = "job-k-octets"
+	AttributeNumberOfDocuments             = "number-of-documents"
+	AttributeJobOriginatingUserName        = "job-originating-user-name"
 )
 
 var (
-	DefaultClassAttributes   = []string{"printer-name", "member-names"}
-	DefaultPrinterAttributes = []string{"printer-name", "printer-type", "printer-location", "printer-info",
-		"printer-make-and-model", "printer-state", "printer-state-message", "printer-state-reason",
-		"printer-uri-supported", "device-uri", "printer-is-shared"}
-	DefaultJobAttributes = []string{"job-id", "job-name", "printer-uri", "job-state", "job-state-reasons",
-		"job-hold-until", "job-media-progress", "job-k-octets", "number-of-documents", "copies",
-		"job-originating-user-name"}
+	DefaultClassAttributes   = []string{AttributePrinterName, AttributeMemberNames}
+	DefaultPrinterAttributes = []string{AttributePrinterName, AttributePrinterType, AttributePrinterLocation, AttributePrinterInfo,
+		AttributePrinterMarkAndModel, AttributePrinterState, AttributePrinterStateMessage, AttributePrinterStateReason,
+		AttributePrinterUriSupported, AttributeDeviceURI, AttributePrinterIsShared}
+	DefaultJobAttributes = []string{AttributeJobID, AttributeJobName, AttributePrinterURI, AttributeJobState, AttributeJobStateReason,
+		AttributeJobHoldUntil, AttributeJobMediaProgress, AttributeJobKilobyteOctets, AttributeNumberOfDocuments, AttributeCopies,
+		AttributeJobOriginatingUserName}
 
 	AttributeTagMapping = map[string]Tag{
-		"attributes-charset":          TagCharset,
-		"attributes-natural-language": TagLanguage,
-		"copies":                      TagInteger,
-		"device-uri":                  TagUri,
-		"document-format":             TagMimeType,
-		"document-name":               TagName,
-		"document-number":             TagInteger,
-		"document-state":              TagEnum,
-		"finishings":                  TagEnum,
-		"hold-job-until":              TagKeyword,
-		"job-hold-until":              TagKeyword,
-		"job-id":                      TagInteger,
-		"job-name":                    TagName,
-		"job-printer-uri":             TagUri,
-		"job-priority":                TagInteger,
-		"job-sheets":                  TagName,
-		"job-state":                   TagEnum,
-		"job-state-reason":            TagKeyword,
-		"job-uri":                     TagUri,
-		"last-document":               TagBoolean,
-		"media":                       TagKeyword,
-		"member-uris":                 TagUri,
-		"my-jobs":                     TagBoolean,
-		"number-up":                   TagInteger,
-		"orientation-requested":       TagEnum,
-		"ppd-name":                    TagName,
-		"print-quality":               TagEnum,
-		"printer-error-policy":        TagName,
-		"printer-info":                TagText,
-		"printer-is-accepting-jobs":   TagBoolean,
-		"printer-is-shared":           TagBoolean,
-		"printer-location":            TagText,
-		"printer-resolution":          TagResolution,
-		"printer-state":               TagEnum,
-		"printer-state-reason":        TagKeyword,
-		"printer-uri":                 TagUri,
-		"purge-jobs":                  TagBoolean,
-		"requested-attributes":        TagKeyword,
-		"requesting-user-name":        TagName,
-		"which-jobs":                  TagKeyword,
-		"first-job-id":                TagInteger,
+		AttributeCharset:                TagCharset,
+		AttributeNaturalLanguage:        TagLanguage,
+		AttributeCopies:                 TagInteger,
+		AttributeDeviceURI:              TagUri,
+		AttributeDocumentFormat:         TagMimeType,
+		AttributeDocumentName:           TagName,
+		AttributeDocumentNumber:         TagInteger,
+		AttributeDocumentState:          TagEnum,
+		AttributeFinishings:             TagEnum,
+		AttributeJobHoldUntil:           TagKeyword,
+		AttributeHoldJobUntil:           TagKeyword,
+		AttributeJobID:                  TagInteger,
+		AttributeJobName:                TagName,
+		AttributeJobPrinterURI:          TagUri,
+		AttributeJobPriority:            TagInteger,
+		AttributeJobSheets:              TagName,
+		AttributeJobState:               TagEnum,
+		AttributeJobStateReason:         TagKeyword,
+		AttributeJobURI:                 TagUri,
+		AttributeLastDocument:           TagBoolean,
+		AttributeMedia:                  TagKeyword,
+		AttributeMemberURIs:             TagUri,
+		AttributeMyJobs:                 TagBoolean,
+		AttributeNumberUp:               TagInteger,
+		AttributeOrientationRequested:   TagEnum,
+		AttributePPDName:                TagName,
+		AttributePrintQuality:           TagEnum,
+		AttributePrinterErrorPolicy:     TagName,
+		AttributePrinterInfo:            TagText,
+		AttributePrinterIsAcceptingJobs: TagBoolean,
+		AttributePrinterIsShared:        TagBoolean,
+		AttributePrinterLocation:        TagText,
+		AttributePrinterResolution:      TagResolution,
+		AttributePrinterState:           TagEnum,
+		AttributePrinterStateReason:     TagKeyword,
+		AttributePrinterURI:             TagUri,
+		AttributePurgeJobs:              TagBoolean,
+		AttributeRequestedAttributes:    TagKeyword,
+		AttributeRequestingUserName:     TagName,
+		AttributeWhichJobs:              TagKeyword,
+		AttributeFirstJobID:             TagInteger,
+		AttributeStatusMessage:          TagText,
 	}
 )

@@ -59,11 +59,11 @@ func (r *Request) Encode() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := enc.Encode("attributes-charset", Charset); err != nil {
+	if err := enc.Encode(AttributeCharset, Charset); err != nil {
 		return nil, err
 	}
 
-	if err := enc.Encode("attributes-natural-language", CharsetLanguage); err != nil {
+	if err := enc.Encode(AttributeNaturalLanguage, CharsetLanguage); err != nil {
 		return nil, err
 	}
 

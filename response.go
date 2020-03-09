@@ -14,7 +14,7 @@ type Response struct {
 	ProtocolVersionMajor uint8
 	ProtocolVersionMinor uint8
 
-	StatusCode uint16
+	StatusCode int16
 	RequestId  int32
 
 	OperationAttributes Attributes
@@ -34,7 +34,7 @@ func (r *Response) CheckForErrors() error {
 	return nil
 }
 
-func NewResponse(statusCode uint16, reqID int32) *Response {
+func NewResponse(statusCode int16, reqID int32) *Response {
 	return &Response{
 		ProtocolVersionMajor: ProtocolVersionMajor,
 		ProtocolVersionMinor: ProtocolVersionMinor,

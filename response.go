@@ -228,7 +228,7 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 			return nil, err
 		}
 
-		startByte := startByteSlice[0]
+		startByte := int8(startByteSlice[0])
 
 		// check if attributes are completed
 		if startByte == TagEnd {
@@ -269,7 +269,7 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 			if _, err := d.reader.Read(startByteSlice); err != nil {
 				return nil, err
 			}
-			startByte = startByteSlice[0]
+			startByte = int8(startByteSlice[0])
 		}
 
 		attrib, err := attribDecoder.Decode(startByte)
@@ -304,7 +304,7 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 	return resp, nil
 }
 
-func appendAttributeToResponse(resp *Response, tag byte, attr map[string][]Attribute) {
+func appendAttributeToResponse(resp *Response, tag int8, attr map[string][]Attribute) {
 	switch tag {
 	case TagOperation:
 		resp.OperationAttributes = attr

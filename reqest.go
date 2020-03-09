@@ -152,7 +152,7 @@ func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 			return nil, err
 		}
 
-		startByte := startByteSlice[0]
+		startByte := int8(startByteSlice[0])
 
 		// check if attributes are completed
 		if startByte == TagEnd {
@@ -189,7 +189,7 @@ func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 			if _, err := d.reader.Read(startByteSlice); err != nil {
 				return nil, err
 			}
-			startByte = startByteSlice[0]
+			startByte = int8(startByteSlice[0])
 		}
 
 		attrib, err := attribDecoder.Decode(startByte)
@@ -216,7 +216,7 @@ func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 	return req, nil
 }
 
-func appendAttributeToRequest(req *Request, tag byte, name string, value interface{}) {
+func appendAttributeToRequest(req *Request, tag int8, name string, value interface{}) {
 	switch tag {
 	case TagOperation:
 		req.OperationAttributes[name] = value

@@ -307,7 +307,7 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 	return resp.PrinterAttributes[0], nil
 }
 
-func (c *IPPClient) GetJobs(printer, class string, whichJobs JobStateFilter, myJobs bool, firstJobId, limit int, attributes []string) (map[int]Attributes, error) {
+func (c *IPPClient) GetJobs(printer, class string, whichJobs string, myJobs bool, firstJobId, limit int, attributes []string) (map[int]Attributes, error) {
 	req := NewRequest(OperationGetJobs, 1)
 	req.OperationAttributes[AttributeWhichJobs] = string(whichJobs)
 	req.OperationAttributes[AttributeMyJobs] = myJobs

@@ -186,52 +186,48 @@ const (
 	OperationCupsCreateLocalPrinter          int16 = 0x4028
 )
 
-type Tag int8
-
 const (
-	TagCupsInvalid       byte = -1
-	TagZero              byte = 0x00
-	TagOperation         byte = 0x01
-	TagJob               byte = 0x02
-	TagEnd               byte = 0x03
-	TagPrinter           byte = 0x04
-	TagUnsupportedGroup  byte = 0x05
-	TagSubscription      byte = 0x06
-	TagEventNotification byte = 0x07
-	TagResource          byte = 0x08
-	TagDocument          byte = 0x09
-	TagSystem            byte = 0x0a
-	TagUnsupportedValue  byte = 0x10
-	TagDefault           byte = 0x11
-	TagUnknown           byte = 0x12
-	TagNoValue           byte = 0x13
-	TagNotSettable       byte = 0x15
-	TagDeleteAttr        byte = 0x16
-	TagAdminDefine       byte = 0x17
-	TagInteger           byte = 0x21
-	TagBoolean           byte = 0x22
-	TagEnum              byte = 0x23
-	TagString            byte = 0x30
-	TagDate              byte = 0x31
-	TagResolution        byte = 0x32
-	TagRange             byte = 0x33
-	TagBeginCollection   byte = 0x34
-	TagTextLang          byte = 0x35
-	TagNameLang          byte = 0x36
-	TagEndCollection     byte = 0x37
-	TagText              byte = 0x41
-	TagName              byte = 0x42
-	TagReservedString    byte = 0x43
-	TagKeyword           byte = 0x44
-	TagUri               byte = 0x45
-	TagUriScheme         byte = 0x46
-	TagCharset           byte = 0x47
-	TagLanguage          byte = 0x48
-	TagMimeType          byte = 0x49
-	TagMemberName        byte = 0x4a
-	TagExtension         byte = 0x7f
-	TagCupsMask          byte = 0x7fffffff
-	TagCupsConst         byte = -0x7fffffff - 1
+	TagCupsInvalid       int8 = -1
+	TagZero              int8 = 0x00
+	TagOperation         int8 = 0x01
+	TagJob               int8 = 0x02
+	TagEnd               int8 = 0x03
+	TagPrinter           int8 = 0x04
+	TagUnsupportedGroup  int8 = 0x05
+	TagSubscription      int8 = 0x06
+	TagEventNotification int8 = 0x07
+	TagResource          int8 = 0x08
+	TagDocument          int8 = 0x09
+	TagSystem            int8 = 0x0a
+	TagUnsupportedValue  int8 = 0x10
+	TagDefault           int8 = 0x11
+	TagUnknown           int8 = 0x12
+	TagNoValue           int8 = 0x13
+	TagNotSettable       int8 = 0x15
+	TagDeleteAttr        int8 = 0x16
+	TagAdminDefine       int8 = 0x17
+	TagInteger           int8 = 0x21
+	TagBoolean           int8 = 0x22
+	TagEnum              int8 = 0x23
+	TagString            int8 = 0x30
+	TagDate              int8 = 0x31
+	TagResolution        int8 = 0x32
+	TagRange             int8 = 0x33
+	TagBeginCollection   int8 = 0x34
+	TagTextLang          int8 = 0x35
+	TagNameLang          int8 = 0x36
+	TagEndCollection     int8 = 0x37
+	TagText              int8 = 0x41
+	TagName              int8 = 0x42
+	TagReservedString    int8 = 0x43
+	TagKeyword           int8 = 0x44
+	TagUri               int8 = 0x45
+	TagUriScheme         int8 = 0x46
+	TagCharset           int8 = 0x47
+	TagLanguage          int8 = 0x48
+	TagMimeType          int8 = 0x49
+	TagMemberName        int8 = 0x4a
+	TagExtension         int8 = 0x7f
 )
 
 const (
@@ -264,13 +260,11 @@ const (
 	JobStateFilterAll          = "all"
 )
 
-type ErrorPolicy string
-
 const (
-	ErrorPolicyRetryJob        ErrorPolicy = "retry-job"
-	ErrorPolicyAbortJob                    = "abort-job"
-	ErrorPolicyRetryCurrentJob             = "retry-current-job"
-	ErrorPolicyStopPrinter                 = "stop-printer"
+	ErrorPolicyRetryJob        = "retry-job"
+	ErrorPolicyAbortJob        = "abort-job"
+	ErrorPolicyRetryCurrentJob = "retry-current-job"
+	ErrorPolicyStopPrinter     = "stop-printer"
 )
 
 const (
@@ -352,7 +346,7 @@ var (
 		AttributeJobHoldUntil, AttributeJobMediaProgress, AttributeJobKilobyteOctets, AttributeNumberOfDocuments, AttributeCopies,
 		AttributeJobOriginatingUserName}
 
-	AttributeTagMapping = map[string]byte{
+	AttributeTagMapping = map[string]int8{
 		AttributeCharset:                TagCharset,
 		AttributeNaturalLanguage:        TagLanguage,
 		AttributeCopies:                 TagInteger,

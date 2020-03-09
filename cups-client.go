@@ -147,7 +147,7 @@ func (c *CUPSClient) DeleteClass(class string) error {
 	return err
 }
 
-func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, errorPolicy ErrorPolicy, information, location string) error {
+func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, errorPolicy string, information, location string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(name)
 	req.OperationAttributes[AttributePPDName] = ppd
@@ -189,7 +189,7 @@ func (c *CUPSClient) SetPrinterIsShared(printer string, shared bool) error {
 	return err
 }
 
-func (c *CUPSClient) SetPrinterErrorPolicy(printer string, errorPolicy ErrorPolicy) error {
+func (c *CUPSClient) SetPrinterErrorPolicy(printer string, errorPolicy string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.PrinterAttributes[AttributePrinterErrorPolicy] = string(errorPolicy)

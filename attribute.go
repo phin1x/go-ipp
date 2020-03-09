@@ -330,7 +330,7 @@ func (e *AttributeEncoder) encodeBoolean(b bool) error {
 	return binary.Write(e.writer, binary.BigEndian, b)
 }
 
-func (e *AttributeEncoder) encodeTag(t byte) error {
+func (e *AttributeEncoder) encodeTag(t int8) error {
 	return binary.Write(e.writer, binary.BigEndian, t)
 }
 
@@ -339,7 +339,7 @@ func (e *AttributeEncoder) writeNullByte() error {
 }
 
 type Attribute struct {
-	Tag   byte
+	Tag   int8
 	Name  string
 	Value interface{}
 }
@@ -352,7 +352,7 @@ func NewAttributeDecoder(r io.Reader) *AttributeDecoder {
 	return &AttributeDecoder{r}
 }
 
-func (d *AttributeDecoder) Decode(tag byte) (*Attribute, error) {
+func (d *AttributeDecoder) Decode(tag int8) (*Attribute, error) {
 	attr := Attribute{Tag: tag}
 
 	name, err := d.decodeString()

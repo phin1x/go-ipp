@@ -11,8 +11,8 @@ import (
 type Attributes map[string][]Attribute
 
 type Response struct {
-	ProtocolVersionMajor uint8
-	ProtocolVersionMinor uint8
+	ProtocolVersionMajor int8
+	ProtocolVersionMinor int8
 
 	StatusCode int16
 	RequestId  int32

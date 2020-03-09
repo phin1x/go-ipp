@@ -7,8 +7,8 @@ import (
 )
 
 type Request struct {
-	ProtocolVersionMajor uint8
-	ProtocolVersionMinor uint8
+	ProtocolVersionMajor int8
+	ProtocolVersionMinor int8
 
 	Operation int16
 	RequestId int32

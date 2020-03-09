@@ -231,27 +231,27 @@ const (
 )
 
 const (
-	JobStatePending    uint8 = 0x03
-	JobStateHeld       uint8 = 0x04
-	JobStateProcessing uint8 = 0x05
-	JobStateStopped    uint8 = 0x06
-	JobStateCanceled   uint8 = 0x07
-	JobStateAborted    uint8 = 0x08
-	JobStateCompleted  uint8 = 0x09
+	JobStatePending    int8 = 0x03
+	JobStateHeld       int8 = 0x04
+	JobStateProcessing int8 = 0x05
+	JobStateStopped    int8 = 0x06
+	JobStateCanceled   int8 = 0x07
+	JobStateAborted    int8 = 0x08
+	JobStateCompleted  int8 = 0x09
 )
 
 const (
-	DocumentStatePending    uint8 = 0x03
-	DocumentStateProcessing uint8 = 0x05
-	DocumentStateCanceled   uint8 = 0x07
-	DocumentStateAborted    uint8 = 0x08
-	DocumentStateCompleted  uint8 = 0x08
+	DocumentStatePending    int8 = 0x03
+	DocumentStateProcessing int8 = 0x05
+	DocumentStateCanceled   int8 = 0x07
+	DocumentStateAborted    int8 = 0x08
+	DocumentStateCompleted  int8 = 0x08
 )
 
 const (
-	PrinterStateIdle       uint8 = 0x0003
-	PrinterStateProcessing uint8 = 0x0004
-	PrinterStateStopped    uint8 = 0x0005
+	PrinterStateIdle       int8 = 0x0003
+	PrinterStateProcessing int8 = 0x0004
+	PrinterStateStopped    int8 = 0x0005
 )
 
 const (
@@ -270,8 +270,8 @@ const (
 const (
 	CharsetLanguage      = "en-US"
 	Charset              = "utf-8"
-	ProtocolVersionMajor = uint8(2)
-	ProtocolVersionMinor = uint8(0)
+	ProtocolVersionMajor = int8(2)
+	ProtocolVersionMinor = int8(0)
 
 	DefaultJobPriority = 50
 

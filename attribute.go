@@ -453,7 +453,7 @@ func (d *AttributeDecoder) decodeDate() ([]int, error) {
 	}
 
 	is := make([]int, length)
-	var ti uint8
+	var ti int8
 
 	for i := int16(0); i < length; i++ {
 		if err = binary.Read(d.reader, binary.BigEndian, &ti); err != nil {
@@ -489,7 +489,7 @@ func (d *AttributeDecoder) decodeRange() ([]int, error) {
 type Resolution struct {
 	Height int
 	Width  int
-	Depth  uint8
+	Depth  int8
 }
 
 func (d *AttributeDecoder) decodeResolution() (res Resolution, err error) {

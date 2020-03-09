@@ -10,7 +10,7 @@ type Request struct {
 	ProtocolVersionMajor uint8
 	ProtocolVersionMinor uint8
 
-	Operation Operation
+	Operation int16
 	RequestId int32
 
 	OperationAttributes map[string]interface{}
@@ -21,7 +21,7 @@ type Request struct {
 	FileSize int
 }
 
-func NewRequest(op Operation, reqID int32) *Request {
+func NewRequest(op int16, reqID int32) *Request {
 	return &Request{
 		ProtocolVersionMajor: ProtocolVersionMajor,
 		ProtocolVersionMinor: ProtocolVersionMinor,
@@ -47,7 +47,7 @@ func (r *Request) Encode() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := binary.Write(buf, binary.BigEndian, int16(r.Operation)); err != nil {
+	if err := binary.Write(buf, binary.BigEndian, r.Operation); err != nil {
 		return nil, err
 	}
 
@@ -192,7 +192,7 @@ func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 			startByte = startByteSlice[0]
 		}
 
-		attrib, err := attribDecoder.Decode(Tag(startByte))
+		attrib, err := attribDecoder.Decode(startByte)
 		if err != nil {
 			return nil, err
 		}
@@ -216,7 +216,7 @@ func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 	return req, nil
 }
 
-func appendAttributeToRequest(req *Request, tag Tag, name string, value interface{}) {
+func appendAttributeToRequest(req *Request, tag byte, name string, value interface{}) {
 	switch tag {
 	case TagOperation:
 		req.OperationAttributes[name] = value

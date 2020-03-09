@@ -272,7 +272,7 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 			startByte = startByteSlice[0]
 		}
 
-		attrib, err := attribDecoder.Decode(Tag(startByte))
+		attrib, err := attribDecoder.Decode(startByte)
 		if err != nil {
 			return nil, err
 		}
@@ -304,7 +304,7 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 	return resp, nil
 }
 
-func appendAttributeToResponse(resp *Response, tag Tag, attr map[string][]Attribute) {
+func appendAttributeToResponse(resp *Response, tag byte, attr map[string][]Attribute) {
 	switch tag {
 	case TagOperation:
 		resp.OperationAttributes = attr

@@ -47,7 +47,7 @@ func (c *CUPSClient) MoveAllJob(srcPrinter, destPrinter string) error {
 }
 
 func (c *CUPSClient) GetPPDs() (map[string]Attributes, error) {
-	req := NewRequest(OperationCupsGetPpds, 1)
+	req := NewRequest(OperationCupsGetPPDs, 1)
 
 	resp, err := c.SendRequest(c.getHttpUri("", nil), req, nil)
 	if err != nil {

@@ -65,7 +65,7 @@ func TestAttributeDecoder(t *testing.T) {
 	dec := NewAttributeDecoder(buf)
 
 	for _, c := range attributeTestCases {
-		tag := Tag(c.Bytes[:1][0])
+		tag := c.Bytes[:1][0]
 
 		buf.Write(c.Bytes[1:])
 

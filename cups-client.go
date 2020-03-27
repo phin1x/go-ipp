@@ -5,15 +5,18 @@ import (
 	"strings"
 )
 
+// IPPClient implements a ipp client with specific cups operations
 type CUPSClient struct {
 	*IPPClient
 }
 
+// NewIPPClient creates a new cups ipp client
 func NewCUPSClient(host string, port int, username, password string, useTLS bool) *CUPSClient {
 	ippClient := NewIPPClient(host, port, username, password, useTLS)
 	return &CUPSClient{ippClient}
 }
 
+// GetDevices returns a map of device uris and printer attributes
 func (c *CUPSClient) GetDevices() (map[string]Attributes, error) {
 	req := NewRequest(OperationCupsGetDevices, 1)
 
@@ -31,6 +34,7 @@ func (c *CUPSClient) GetDevices() (map[string]Attributes, error) {
 	return printerNameMap, nil
 }
 
+// MoveJob moves a job to a other printer
 func (c *CUPSClient) MoveJob(jobID int, destPrinter string) error {
 	req := NewRequest(OperationCupsMoveJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
@@ -40,6 +44,7 @@ func (c *CUPSClient) MoveJob(jobID int, destPrinter string) error {
 	return err
 }
 
+// MoveAllJob moves all job from a printer to a other printer
 func (c *CUPSClient) MoveAllJob(srcPrinter, destPrinter string) error {
 	req := NewRequest(OperationCupsMoveJob, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(srcPrinter)
@@ -49,6 +54,7 @@ func (c *CUPSClient) MoveAllJob(srcPrinter, destPrinter string) error {
 	return err
 }
 
+// GetPPDs returns a map of ppd names and attributes
 func (c *CUPSClient) GetPPDs() (map[string]Attributes, error) {
 	req := NewRequest(OperationCupsGetPPDs, 1)
 
@@ -66,6 +72,7 @@ func (c *CUPSClient) GetPPDs() (map[string]Attributes, error) {
 	return ppdNameMap, nil
 }
 
+// AcceptJobs lets a printer accept jobs again
 func (c *CUPSClient) AcceptJobs(printer string) error {
 	req := NewRequest(OperationCupsAcceptJobs, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -74,6 +81,7 @@ func (c *CUPSClient) AcceptJobs(printer string) error {
 	return err
 }
 
+// RejectJobs does not let a printer accept jobs
 func (c *CUPSClient) RejectJobs(printer string) error {
 	req := NewRequest(OperationCupsRejectJobs, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -82,6 +90,7 @@ func (c *CUPSClient) RejectJobs(printer string) error {
 	return err
 }
 
+// AddPrinterToClass adds a printer to a class, if the class does not exists it will be crated
 func (c *CUPSClient) AddPrinterToClass(class, printer string) error {
 	attributes, err := c.GetPrinterAttributes(class, []string{AttributeMemberURIs})
 	if err != nil && !IsNotExistsError(err) {
@@ -113,6 +122,7 @@ func (c *CUPSClient) AddPrinterToClass(class, printer string) error {
 	return err
 }
 
+// DeletePrinterFromClass removes a printer from a class, if a class has no more printer it will be deleted
 func (c *CUPSClient) DeletePrinterFromClass(class, printer string) error {
 	attributes, err := c.GetPrinterAttributes(class, []string{AttributeMemberURIs})
 	if err != nil {
@@ -142,6 +152,7 @@ func (c *CUPSClient) DeletePrinterFromClass(class, printer string) error {
 	return err
 }
 
+// DeleteClass deletes a class
 func (c *CUPSClient) DeleteClass(class string) error {
 	req := NewRequest(OperationCupsDeleteClass, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getClassUri(class)
@@ -150,6 +161,7 @@ func (c *CUPSClient) DeleteClass(class string) error {
 	return err
 }
 
+// CreatePrinter creates a new printer
 func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, errorPolicy string, information, location string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(name)
@@ -165,6 +177,7 @@ func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, err
 	return err
 }
 
+// SetPrinterPPD sets the ppd for a printer
 func (c *CUPSClient) SetPrinterPPD(printer, ppd string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -174,6 +187,7 @@ func (c *CUPSClient) SetPrinterPPD(printer, ppd string) error {
 	return err
 }
 
+// SetPrinterDeviceURI sets the device uri for a printer
 func (c *CUPSClient) SetPrinterDeviceURI(printer, deviceURI string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -183,6 +197,7 @@ func (c *CUPSClient) SetPrinterDeviceURI(printer, deviceURI string) error {
 	return err
 }
 
+// SetPrinterIsShared shares or unshares a printer in the network
 func (c *CUPSClient) SetPrinterIsShared(printer string, shared bool) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -192,6 +207,7 @@ func (c *CUPSClient) SetPrinterIsShared(printer string, shared bool) error {
 	return err
 }
 
+// SetPrinterErrorPolicy sets the error policy for a printer
 func (c *CUPSClient) SetPrinterErrorPolicy(printer string, errorPolicy string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -201,6 +217,7 @@ func (c *CUPSClient) SetPrinterErrorPolicy(printer string, errorPolicy string) e
 	return err
 }
 
+// SetPrinterInformation sets general printer information
 func (c *CUPSClient) SetPrinterInformation(printer, information string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -210,6 +227,7 @@ func (c *CUPSClient) SetPrinterInformation(printer, information string) error {
 	return err
 }
 
+// SetPrinterLocation sets the printer location
 func (c *CUPSClient) SetPrinterLocation(printer, location string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -219,6 +237,7 @@ func (c *CUPSClient) SetPrinterLocation(printer, location string) error {
 	return err
 }
 
+// DeletePrinter deletes a printer
 func (c *CUPSClient) DeletePrinter(printer string) error {
 	req := NewRequest(OperationCupsDeletePrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -227,6 +246,7 @@ func (c *CUPSClient) DeletePrinter(printer string) error {
 	return err
 }
 
+// GetPrinters returns a map of printer names and attributes
 func (c *CUPSClient) GetPrinters(attributes []string) (map[string]Attributes, error) {
 	req := NewRequest(OperationCupsGetPrinters, 1)
 
@@ -250,6 +270,7 @@ func (c *CUPSClient) GetPrinters(attributes []string) (map[string]Attributes, er
 	return printerNameMap, nil
 }
 
+// GetClasses returns a map of class names and attributes
 func (c *CUPSClient) GetClasses(attributes []string) (map[string]Attributes, error) {
 	req := NewRequest(OperationCupsGetClasses, 1)
 

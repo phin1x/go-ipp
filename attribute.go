@@ -11,14 +11,19 @@ const (
 	sizeBoolean = int16(1)
 )
 
+// ipp attribute encoder
+// encodes attribute to a io.Writer
 type AttributeEncoder struct {
 	writer io.Writer
 }
 
+// create a new attribute encoder from a writer
 func NewAttributeEncoder(w io.Writer) *AttributeEncoder {
 	return &AttributeEncoder{w}
 }
 
+// encodes a attribute and its value to a io.Writer
+// the tag is determined by the AttributeTagMapping map
 func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 	tag, ok := AttributeTagMapping[attribute]
 	if !ok {
@@ -338,20 +343,27 @@ func (e *AttributeEncoder) writeNullByte() error {
 	return binary.Write(e.writer, binary.BigEndian, int16(0))
 }
 
+// representation of a ipp attribute
+// a attribute contains a tag, witch identifies the type, the name of the attribute a the value
 type Attribute struct {
 	Tag   int8
 	Name  string
 	Value interface{}
 }
 
+// ipp attribute decoder
+// reads from a io.Reader an decode the data into an attribute struct
 type AttributeDecoder struct {
 	reader io.Reader
 }
 
+// create a new attribute decoder from a reader
 func NewAttributeDecoder(r io.Reader) *AttributeDecoder {
 	return &AttributeDecoder{r}
 }
 
+// reads from a io.Reader and decode the attribute
+// the type is identified by a tag passed as an argument
 func (d *AttributeDecoder) Decode(tag int8) (*Attribute, error) {
 	attr := Attribute{Tag: tag}
 
@@ -486,6 +498,7 @@ func (d *AttributeDecoder) decodeRange() ([]int, error) {
 	return r, nil
 }
 
+// represents the data of the resolution attribute
 type Resolution struct {
 	Height int
 	Width  int

@@ -5,12 +5,12 @@ import (
 	"strings"
 )
 
-// IPPClient implements a ipp client with specific cups operations
+// CUPSClient implements a ipp client with specific cups operations
 type CUPSClient struct {
 	*IPPClient
 }
 
-// NewIPPClient creates a new cups ipp client
+// NewCUPSClient creates a new cups ipp client
 func NewCUPSClient(host string, port int, username, password string, useTLS bool) *CUPSClient {
 	ippClient := NewIPPClient(host, port, username, password, useTLS)
 	return &CUPSClient{ippClient}

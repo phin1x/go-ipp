@@ -6,6 +6,7 @@ import (
 	"io"
 )
 
+// Request defines a ipp request
 type Request struct {
 	ProtocolVersionMajor int8
 	ProtocolVersionMinor int8
@@ -21,6 +22,7 @@ type Request struct {
 	FileSize int
 }
 
+// NewRequest creates a new ipp request
 func NewRequest(op int16, reqID int32) *Request {
 	return &Request{
 		ProtocolVersionMajor: ProtocolVersionMajor,
@@ -35,6 +37,7 @@ func NewRequest(op int16, reqID int32) *Request {
 	}
 }
 
+// Encode encodes the request to a byte slice
 func (r *Request) Encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	enc := NewAttributeEncoder(buf)
@@ -104,16 +107,19 @@ func (r *Request) Encode() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// RequestDecoder reads and decodes a request from a stream
 type RequestDecoder struct {
 	reader io.Reader
 }
 
+// NewRequestDecoder returns a new decoder that reads from r
 func NewRequestDecoder(r io.Reader) *RequestDecoder {
 	return &RequestDecoder{
 		reader: r,
 	}
 }
 
+// Decode decodes a ipp request into a request  struct. additional data will be written to an io.Writer if data is not nil
 func (d *RequestDecoder) Decode(data io.Writer) (*Request, error) {
 	req := new(Request)
 

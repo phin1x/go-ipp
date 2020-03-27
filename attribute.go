@@ -11,18 +11,17 @@ const (
 	sizeBoolean = int16(1)
 )
 
-// ipp attribute encoder
-// encodes attribute to a io.Writer
+// AttributeEncoder encodes attribute to a io.Writer
 type AttributeEncoder struct {
 	writer io.Writer
 }
 
-// create a new attribute encoder from a writer
+// NewAttributeEncoder returns a new encoder that writes to w
 func NewAttributeEncoder(w io.Writer) *AttributeEncoder {
 	return &AttributeEncoder{w}
 }
 
-// encodes a attribute and its value to a io.Writer
+// Encode encodes a attribute and its value to a io.Writer
 // the tag is determined by the AttributeTagMapping map
 func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 	tag, ok := AttributeTagMapping[attribute]
@@ -343,27 +342,31 @@ func (e *AttributeEncoder) writeNullByte() error {
 	return binary.Write(e.writer, binary.BigEndian, int16(0))
 }
 
-// representation of a ipp attribute
-// a attribute contains a tag, witch identifies the type, the name of the attribute a the value
+// Attribute defines an ipp attribute
 type Attribute struct {
 	Tag   int8
 	Name  string
 	Value interface{}
 }
 
-// ipp attribute decoder
-// reads from a io.Reader an decode the data into an attribute struct
+// Resolution defines the resolution attribute
+type Resolution struct {
+	Height int
+	Width  int
+	Depth  int8
+}
+
+// AttributeDecoder reads and decodes ipp from an input stream
 type AttributeDecoder struct {
 	reader io.Reader
 }
 
-// create a new attribute decoder from a reader
+// NewAttributeDecoder returns a new decoder that reads from r
 func NewAttributeDecoder(r io.Reader) *AttributeDecoder {
 	return &AttributeDecoder{r}
 }
 
-// reads from a io.Reader and decode the attribute
-// the type is identified by a tag passed as an argument
+// Decode reads the next ipp attribute into a attribute struct. the type is identified by a tag passed as an argument
 func (d *AttributeDecoder) Decode(tag int8) (*Attribute, error) {
 	attr := Attribute{Tag: tag}
 
@@ -496,13 +499,6 @@ func (d *AttributeDecoder) decodeRange() ([]int, error) {
 	}
 
 	return r, nil
-}
-
-// represents the data of the resolution attribute
-type Resolution struct {
-	Height int
-	Width  int
-	Depth  int8
 }
 
 func (d *AttributeDecoder) decodeResolution() (res Resolution, err error) {

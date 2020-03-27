@@ -1,5 +1,6 @@
 package ipp
 
+// ipp status codes
 const (
 	StatusCupsInvalid                         int16 = -1
 	StatusOk                                  int16 = 0x0000
@@ -66,6 +67,7 @@ const (
 	StatusErrorCupsUpgradeRequired            int16 = 0x1002
 )
 
+// ipp operations
 const (
 	OperationCupsInvalid                     int16 = -0x0001
 	OperationCupsNone                        int16 = 0x0000
@@ -186,6 +188,7 @@ const (
 	OperationCupsCreateLocalPrinter          int16 = 0x4028
 )
 
+// ipp tags
 const (
 	TagCupsInvalid       int8 = -1
 	TagZero              int8 = 0x00
@@ -230,6 +233,7 @@ const (
 	TagExtension         int8 = 0x7f
 )
 
+// job states
 const (
 	JobStatePending    int8 = 0x03
 	JobStateHeld       int8 = 0x04
@@ -240,6 +244,7 @@ const (
 	JobStateCompleted  int8 = 0x09
 )
 
+// document states
 const (
 	DocumentStatePending    int8 = 0x03
 	DocumentStateProcessing int8 = 0x05
@@ -248,18 +253,21 @@ const (
 	DocumentStateCompleted  int8 = 0x08
 )
 
+// printer states
 const (
 	PrinterStateIdle       int8 = 0x0003
 	PrinterStateProcessing int8 = 0x0004
 	PrinterStateStopped    int8 = 0x0005
 )
 
+// job state filter
 const (
 	JobStateFilterNotCompleted = "not-completed"
 	JobStateFilterCompleted    = "completed"
 	JobStateFilterAll          = "all"
 )
 
+// error policies
 const (
 	ErrorPolicyRetryJob        = "retry-job"
 	ErrorPolicyAbortJob        = "abort-job"
@@ -267,6 +275,7 @@ const (
 	ErrorPolicyStopPrinter     = "stop-printer"
 )
 
+// ipp defaults
 const (
 	CharsetLanguage      = "en-US"
 	Charset              = "utf-8"
@@ -274,13 +283,20 @@ const (
 	ProtocolVersionMinor = int8(0)
 
 	DefaultJobPriority = 50
+)
 
+// useful mime types for ipp
+const (
 	MimeTypePostscript  = "application/postscript"
 	MimeTypeOctetStream = "application/octet-stream"
+)
 
+// ipp content types
+const (
 	ContentTypeIPP = "application/ipp"
 )
 
+// known ipp attributes
 const (
 	AttributeCopies                 = "copies"
 	AttributeDocumentFormat         = "document-format"
@@ -337,6 +353,7 @@ const (
 	AttributeJobOriginatingUserName = "job-originating-user-name"
 )
 
+// Default attributes
 var (
 	DefaultClassAttributes   = []string{AttributePrinterName, AttributeMemberNames}
 	DefaultPrinterAttributes = []string{AttributePrinterName, AttributePrinterType, AttributePrinterLocation, AttributePrinterInfo,
@@ -345,7 +362,10 @@ var (
 	DefaultJobAttributes = []string{AttributeJobID, AttributeJobName, AttributePrinterURI, AttributeJobState, AttributeJobStateReason,
 		AttributeJobHoldUntil, AttributeJobMediaProgress, AttributeJobKilobyteOctets, AttributeNumberOfDocuments, AttributeCopies,
 		AttributeJobOriginatingUserName}
+)
 
+// Attribute to tag mapping
+var (
 	AttributeTagMapping = map[string]int8{
 		AttributeCharset:                TagCharset,
 		AttributeNaturalLanguage:        TagLanguage,

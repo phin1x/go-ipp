@@ -7,8 +7,10 @@ import (
 	"io"
 )
 
+// Attributes is a wrapper for a set of attributes
 type Attributes map[string][]Attribute
 
+// Response defines a ipp response
 type Response struct {
 	ProtocolVersionMajor int8
 	ProtocolVersionMinor int8
@@ -21,6 +23,7 @@ type Response struct {
 	JobAttributes       []Attributes
 }
 
+// CheckForErrors checks the status code and returns a error if it is not zero. it also returns the status message if provided by the server
 func (r *Response) CheckForErrors() error {
 	if r.StatusCode != StatusOk {
 		err := IPPError{
@@ -38,6 +41,7 @@ func (r *Response) CheckForErrors() error {
 	return nil
 }
 
+// NewRequest creates a new ipp response
 func NewResponse(statusCode int16, reqID int32) *Response {
 	return &Response{
 		ProtocolVersionMajor: ProtocolVersionMajor,
@@ -50,7 +54,8 @@ func NewResponse(statusCode int16, reqID int32) *Response {
 	}
 }
 
-func (r *Response) Encode(data io.Writer) ([]byte, error) {
+// Encode encodes the response to a byte slice
+func (r *Response) Encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	enc := NewAttributeEncoder(buf)
 
@@ -163,23 +168,26 @@ func (r *Response) Encode(data io.Writer) ([]byte, error) {
 		}
 	}
 
-	if err := binary.Write(buf, binary.BigEndian, int8(TagEnd)); err != nil {
+	if err := binary.Write(buf, binary.BigEndian, TagEnd); err != nil {
 		return nil, err
 	}
 
 	return buf.Bytes(), nil
 }
 
+// ResponseDecoder reads and decodes a response from a stream
 type ResponseDecoder struct {
 	reader io.Reader
 }
 
+// NewResponseDecoder returns a new decoder that reads from r
 func NewResponseDecoder(r io.Reader) *ResponseDecoder {
 	return &ResponseDecoder{
 		reader: r,
 	}
 }
 
+// Decode decodes a ipp response into a response struct. additional data will be written to an io.Writer if data is not nil
 func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 	/*
 	   1 byte: Protocol Major Version - b

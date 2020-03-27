@@ -13,6 +13,7 @@ import (
 	"strconv"
 )
 
+// Document wraps an io.Reader with more information, needed for encoding
 type Document struct {
 	Document io.Reader
 	Size     int
@@ -20,6 +21,7 @@ type Document struct {
 	MimeType string
 }
 
+// IPPClient implements a generic ipp client
 type IPPClient struct {
 	host     string
 	port     int
@@ -30,6 +32,7 @@ type IPPClient struct {
 	client *http.Client
 }
 
+// NewIPPClient creates a new generic ipp client
 func NewIPPClient(host string, port int, username, password string, useTLS bool) *IPPClient {
 	httpClient := http.Client{
 		Transport: &http.Transport{
@@ -73,6 +76,7 @@ func (c *IPPClient) getClassUri(printer string) string {
 	return fmt.Sprintf("ipp://localhost/classes/%s", printer)
 }
 
+// SendRequest sends a request to a remote uri end returns the response
 func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData io.Writer) (*Response, error) {
 	payload, err := req.Encode()
 	if err != nil {
@@ -123,7 +127,7 @@ func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData
 	return resp, err
 }
 
-// Print one or more `Document`s using IPP `Create-Job` followed by `Send-Document` request(s).
+// PrintDocuments prints one or more documents using a Create-Job operation followed by one or more Send-Document operation(s). custom job settings can be specified via the jobAttributes parameter
 func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttributes map[string]interface{}) (int, error) {
 	printerURI := c.getPrinterUri(printer)
 
@@ -173,23 +177,7 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 	return jobID, nil
 }
 
-// Print a `Document` using an IPP `Print-Job` request.
-//
-// `jobAttributes` can contain arbitrary key/value pairs to control the way in which the
-// document is printed. [RFC 2911 § 4.2](https://tools.ietf.org/html/rfc2911#section-4.2)
-// defines some useful attributes:
-//
-//   * [`job-priority`](https://tools.ietf.org/html/rfc2911#section-4.2.1): an integer between 1-100
-//   * [`copies`](https://tools.ietf.org/html/rfc2911#section-4.2.5): a positive integer
-//   * [`finishings`](https://tools.ietf.org/html/rfc2911#section-4.2.6): an enumeration
-//   * [`number-up`](https://tools.ietf.org/html/rfc2911#section-4.2.9): a positive integer
-//   * [`orientation-requested`](https://tools.ietf.org/html/rfc2911#section-4.2.10): an enumeration
-//   * [`media`](https://tools.ietf.org/html/rfc2911#section-4.2.11): a string
-//   * [`printer-resolution`](https://tools.ietf.org/html/rfc2911#section-4.2.12): a `Resolution`
-//   * [`print-quality`](https://tools.ietf.org/html/rfc2911#section-4.2.13): an enumeration
-//
-// Your print system may provide other attributes. Define custom attributes as needed in
-// `AttributeTagMapping` and provide values here.
+// PrintJob prints a document using a Print-Job operation. custom job settings can be specified via the jobAttributes parameter
 func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[string]interface{}) (int, error) {
 	printerURI := c.getPrinterUri(printer)
 
@@ -224,6 +212,7 @@ func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[str
 	return jobID, nil
 }
 
+// PrintFile prints a local file on the file system. custom job settings can be specified via the jobAttributes parameter
 func (c *IPPClient) PrintFile(filePath, printer string, jobAttributes map[string]interface{}) (int, error) {
 	fileStats, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
@@ -250,6 +239,7 @@ func (c *IPPClient) PrintFile(filePath, printer string, jobAttributes map[string
 	}, printer, jobAttributes)
 }
 
+// GetPrinterAttributes returns the requested attributes for the specified printer, if attributes is nil the default attributes will be used
 func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (Attributes, error) {
 	req := NewRequest(OperationGetPrinterAttributes, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -273,6 +263,7 @@ func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (A
 	return resp.PrinterAttributes[0], nil
 }
 
+// ResumePrinter resumes a printer
 func (c *IPPClient) ResumePrinter(printer string) error {
 	req := NewRequest(OperationResumePrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -281,6 +272,7 @@ func (c *IPPClient) ResumePrinter(printer string) error {
 	return err
 }
 
+// PausePrinter pauses a printer
 func (c *IPPClient) PausePrinter(printer string) error {
 	req := NewRequest(OperationPausePrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -289,6 +281,7 @@ func (c *IPPClient) PausePrinter(printer string) error {
 	return err
 }
 
+// GetJobAttributes returns the requested attributes for the specified job, if attributes is nil the default job will be used
 func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes, error) {
 	req := NewRequest(OperationGetJobAttributes, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
@@ -311,6 +304,7 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 	return resp.PrinterAttributes[0], nil
 }
 
+// GetJobs returns jobs from a printer or class
 func (c *IPPClient) GetJobs(printer, class string, whichJobs string, myJobs bool, firstJobId, limit int, attributes []string) (map[int]Attributes, error) {
 	req := NewRequest(OperationGetJobs, 1)
 	req.OperationAttributes[AttributeWhichJobs] = string(whichJobs)
@@ -356,6 +350,7 @@ func (c *IPPClient) GetJobs(printer, class string, whichJobs string, myJobs bool
 	return jobIDMap, nil
 }
 
+// CancelJob cancels a job. if purge is true, the job will also be removed
 func (c *IPPClient) CancelJob(jobID int, purge bool) error {
 	req := NewRequest(OperationCancelJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
@@ -365,6 +360,7 @@ func (c *IPPClient) CancelJob(jobID int, purge bool) error {
 	return err
 }
 
+// CancelJob cancels all jobs for a specified printer. if purge is true, the jobs will also be removed
 func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
 	req := NewRequest(OperationCancelJobs, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -374,6 +370,7 @@ func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
 	return err
 }
 
+// RestartJob restarts a job
 func (c *IPPClient) RestartJob(jobID int) error {
 	req := NewRequest(OperationRestartJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
@@ -382,6 +379,7 @@ func (c *IPPClient) RestartJob(jobID int) error {
 	return err
 }
 
+// RestartJob holds a job
 func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
 	req := NewRequest(OperationRestartJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
@@ -391,6 +389,7 @@ func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
 	return err
 }
 
+// PrintTestPage prints a test page of type application/vnd.cups-pdf-banner
 func (c *IPPClient) PrintTestPage(printer string) (int, error) {
 	testPage := new(bytes.Buffer)
 	testPage.WriteString("#PDF-BANNER\n")
@@ -411,6 +410,7 @@ func (c *IPPClient) PrintTestPage(printer string) (int, error) {
 	})
 }
 
+// TestConnection tests if a tcp connection to the remote server is possible
 func (c *IPPClient) TestConnection() error {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", c.host, c.port))
 	if err != nil {

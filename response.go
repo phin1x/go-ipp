@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -23,12 +22,17 @@ type Response struct {
 }
 
 func (r *Response) CheckForErrors() error {
-	if r.StatusCode != 0 {
-		if len(r.OperationAttributes["status-message"]) == 0 {
-			return fmt.Errorf("ipp server return error code %d but no status message", r.StatusCode)
+	if r.StatusCode != StatusOk {
+		err := IPPError{
+			Status:  r.StatusCode,
+			Message: "no status message returned",
 		}
 
-		return errors.New(r.OperationAttributes["status-message"][0].Value.(string))
+		if len(r.OperationAttributes["status-message"]) > 0 {
+			err.Message = r.OperationAttributes["status-message"][0].Value.(string)
+		}
+
+		return err
 	}
 
 	return nil

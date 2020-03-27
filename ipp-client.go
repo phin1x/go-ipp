@@ -119,19 +119,8 @@ func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData
 		return nil, err
 	}
 
-	if resp.StatusCode == StatusOk {
-		return resp, nil
-	}
-
-	msg := ""
-	if statusMessage, ok := resp.OperationAttributes[AttributeStatusMessage]; ok {
-		msg = statusMessage[0].Value.(string)
-	}
-
-	return resp, IPPError{
-		Status:  resp.StatusCode,
-		Message: msg,
-	}
+	err = resp.CheckForErrors()
+	return resp, err
 }
 
 // Print one or more `Document`s using IPP `Create-Job` followed by `Send-Document` request(s).

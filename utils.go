@@ -6,6 +6,7 @@ import (
 	"path"
 )
 
+// ParseControlFile reads and decodes a cups control file into a response
 func ParseControlFile(jobID int, spoolDirectory string) (*Response, error) {
 	if spoolDirectory == "" {
 		spoolDirectory = "/var/spool/cups"

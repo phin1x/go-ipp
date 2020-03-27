@@ -41,7 +41,7 @@ func (r *Response) CheckForErrors() error {
 	return nil
 }
 
-// NewRequest creates a new ipp response
+// NewResponse creates a new ipp response
 func NewResponse(statusCode int16, reqID int32) *Response {
 	return &Response{
 		ProtocolVersionMajor: ProtocolVersionMajor,

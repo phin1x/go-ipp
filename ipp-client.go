@@ -360,7 +360,7 @@ func (c *IPPClient) CancelJob(jobID int, purge bool) error {
 	return err
 }
 
-// CancelJob cancels all jobs for a specified printer. if purge is true, the jobs will also be removed
+// CancelAllJob cancels all jobs for a specified printer. if purge is true, the jobs will also be removed
 func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
 	req := NewRequest(OperationCancelJobs, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
@@ -379,7 +379,7 @@ func (c *IPPClient) RestartJob(jobID int) error {
 	return err
 }
 
-// RestartJob holds a job
+// HoldJobUntil holds a job
 func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
 	req := NewRequest(OperationRestartJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)

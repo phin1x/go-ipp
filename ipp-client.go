@@ -83,7 +83,7 @@ func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData
 	size := len(payload)
 
 	if req.File != nil && req.FileSize != -1 {
-		size += int(req.FileSize)
+		size += req.FileSize
 
 		body = io.MultiReader(bytes.NewBuffer(payload), req.File)
 	} else {
@@ -109,14 +109,29 @@ func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData
 	defer httpResp.Body.Close()
 
 	if httpResp.StatusCode != 200 {
-		return nil, fmt.Errorf("ipp server returned with http status code %d", httpResp.StatusCode)
+		return nil, HTTPError{
+			Code: httpResp.StatusCode,
+		}
 	}
 
-	// read the response into a temp buffer due to some wired EOF errors
-	// httpBody, _ := ioutil.ReadAll(httpResp.Body)
-	// return NewResponseDecoder(bytes.NewBuffer(httpBody)).Decode(additionalResponseData)
+	resp, err := NewResponseDecoder(httpResp.Body).Decode(additionalResponseData)
+	if err != nil {
+		return nil, err
+	}
 
-	return NewResponseDecoder(httpResp.Body).Decode(additionalResponseData)
+	if resp.StatusCode == StatusOk {
+		return resp, nil
+	}
+
+	msg := ""
+	if statusMessage, ok := resp.OperationAttributes[AttributeStatusMessage]; ok {
+		msg = statusMessage[0].Value.(string)
+	}
+
+	return resp, IPPError{
+		Status:  resp.StatusCode,
+		Message: msg,
+	}
 }
 
 // Print one or more `Document`s using IPP `Create-Job` followed by `Send-Document` request(s).

@@ -1,6 +1,9 @@
 package ipp
 
-import "strings"
+import (
+	"bytes"
+	"strings"
+)
 
 type CUPSClient struct {
 	*IPPClient
@@ -268,4 +271,25 @@ func (c *CUPSClient) GetClasses(attributes []string) (map[string]Attributes, err
 	}
 
 	return printerNameMap, nil
+}
+
+// PrintTestPage prints a test page of type application/vnd.cups-pdf-banner
+func (c *CUPSClient) PrintTestPage(printer string) (int, error) {
+	testPage := new(bytes.Buffer)
+	testPage.WriteString("#PDF-BANNER\n")
+	testPage.WriteString("Template default-testpage.pdf\n")
+	testPage.WriteString("Show printer-name printer-info printer-location printer-make-and-model printer-driver-name")
+	testPage.WriteString("printer-driver-version paper-size imageable-area job-id options time-at-creation")
+	testPage.WriteString("time-at-processing\n\n")
+
+	return c.PrintDocuments([]Document{
+		{
+			Document: testPage,
+			Name:     "Test Page",
+			Size:     testPage.Len(),
+			MimeType: MimeTypePostscript,
+		},
+	}, printer, map[string]interface{}{
+		AttributeJobName: "Test Page",
+	})
 }

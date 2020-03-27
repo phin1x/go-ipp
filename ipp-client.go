@@ -389,27 +389,6 @@ func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
 	return err
 }
 
-// PrintTestPage prints a test page of type application/vnd.cups-pdf-banner
-func (c *IPPClient) PrintTestPage(printer string) (int, error) {
-	testPage := new(bytes.Buffer)
-	testPage.WriteString("#PDF-BANNER\n")
-	testPage.WriteString("Template default-testpage.pdf\n")
-	testPage.WriteString("Show printer-name printer-info printer-location printer-make-and-model printer-driver-name")
-	testPage.WriteString("printer-driver-version paper-size imageable-area job-id options time-at-creation")
-	testPage.WriteString("time-at-processing\n\n")
-
-	return c.PrintDocuments([]Document{
-		{
-			Document: testPage,
-			Name:     "Test Page",
-			Size:     testPage.Len(),
-			MimeType: MimeTypePostscript,
-		},
-	}, printer, map[string]interface{}{
-		AttributeJobName: "Test Page",
-	})
-}
-
 // TestConnection tests if a tcp connection to the remote server is possible
 func (c *IPPClient) TestConnection() error {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", c.host, c.port))

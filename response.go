@@ -3,7 +3,6 @@ package ipp
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"io"
 )
 
@@ -307,10 +306,6 @@ func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
 		if _, err := io.Copy(data, d.reader); err != nil {
 			return nil, err
 		}
-	}
-
-	if resp.StatusCode != 0 {
-		return resp, errors.New(resp.OperationAttributes["status-message"][0].Value.(string))
 	}
 
 	return resp, nil

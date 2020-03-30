@@ -1,6 +1,6 @@
 # go-ipp
 
-[![Version](https://img.shields.io/github/release-pre/phin1x/go-ipp.svg)](https://github.com/phin1x/go-ipp/releases/tag/v1.4.2)
+[![Version](https://img.shields.io/github/release-pre/phin1x/go-ipp.svg)](https://github.com/phin1x/go-ipp/releases/tag/v1.4.3)
 [![Documentation](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/phin1x/go-ipp?tab=doc)
 [![Go Report Card](https://goreportcard.com/badge/github.com/phin1x/go-ipp)](https://goreportcard.com/report/github.com/phin1x/go-ipp)
 [![Licence](https://img.shields.io/github/license/phin1x/go-ipp.svg)](https://github.com/phin1x/go-ipp/blob/master/LICENSE)

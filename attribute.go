@@ -351,8 +351,8 @@ type Attribute struct {
 
 // Resolution defines the resolution attribute
 type Resolution struct {
-	Height int
-	Width  int
+	Height int32
+	Width  int32
 	Depth  int8
 }
 
@@ -480,7 +480,7 @@ func (d *AttributeDecoder) decodeDate() ([]int, error) {
 	return is, nil
 }
 
-func (d *AttributeDecoder) decodeRange() ([]int, error) {
+func (d *AttributeDecoder) decodeRange() ([]int32, error) {
 	length, err := d.readValueLength()
 	if err != nil {
 		return nil, err
@@ -488,10 +488,10 @@ func (d *AttributeDecoder) decodeRange() ([]int, error) {
 
 	// initialize range element count (c) and range slice (r)
 	c := length / 4
-	r := make([]int, c)
+	r := make([]int32, c)
 
 	for i := int16(0); i < c; i++ {
-		var ti int
+		var ti int32
 		if err = binary.Read(d.reader, binary.BigEndian, &ti); err != nil {
 			return nil, err
 		}

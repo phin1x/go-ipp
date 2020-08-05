@@ -325,7 +325,7 @@ const (
 	AttributePrinterInfo            = "printer-info"
 	AttributePrinterLocation        = "printer-location"
 	AttributePrinterName            = "printer-name"
-	AttributePrinterStateReason     = "printer-state-reason"
+	AttributePrinterStateReasons     = "printer-state-reasons"
 	AttributeJobPrinterURI          = "job-printer-uri"
 	AttributeMemberURIs             = "member-uris"
 	AttributeDocumentNumber         = "document-number"

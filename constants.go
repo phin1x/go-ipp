@@ -325,7 +325,7 @@ const (
 	AttributePrinterInfo            = "printer-info"
 	AttributePrinterLocation        = "printer-location"
 	AttributePrinterName            = "printer-name"
-	AttributePrinterStateReason     = "printer-state-reason"
+	AttributePrinterStateReasons    = "printer-state-reasons"
 	AttributeJobPrinterURI          = "job-printer-uri"
 	AttributeMemberURIs             = "member-uris"
 	AttributeDocumentNumber         = "document-number"
@@ -357,7 +357,7 @@ const (
 var (
 	DefaultClassAttributes   = []string{AttributePrinterName, AttributeMemberNames}
 	DefaultPrinterAttributes = []string{AttributePrinterName, AttributePrinterType, AttributePrinterLocation, AttributePrinterInfo,
-		AttributePrinterMarkAndModel, AttributePrinterState, AttributePrinterStateMessage, AttributePrinterStateReason,
+		AttributePrinterMarkAndModel, AttributePrinterState, AttributePrinterStateMessage, AttributePrinterStateReasons,
 		AttributePrinterUriSupported, AttributeDeviceURI, AttributePrinterIsShared}
 	DefaultJobAttributes = []string{AttributeJobID, AttributeJobName, AttributePrinterURI, AttributeJobState, AttributeJobStateReason,
 		AttributeJobHoldUntil, AttributeJobMediaProgress, AttributeJobKilobyteOctets, AttributeNumberOfDocuments, AttributeCopies,

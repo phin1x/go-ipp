@@ -393,6 +393,7 @@ var (
 		AttributeNumberUp:               TagInteger,
 		AttributeOrientationRequested:   TagEnum,
 		AttributePPDName:                TagName,
+		AttributeNumberOfDocuments:      TagInteger,
 		AttributePrintQuality:           TagEnum,
 		AttributePrinterErrorPolicy:     TagName,
 		AttributePrinterInfo:            TagText,

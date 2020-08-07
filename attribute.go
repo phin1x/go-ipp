@@ -303,7 +303,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			}
 		}
 	default:
-		return fmt.Errorf("type %T is not supportet", value)
+		return fmt.Errorf("type %T is not supported", value)
 	}
 
 	return nil

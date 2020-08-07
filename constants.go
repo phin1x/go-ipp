@@ -401,7 +401,7 @@ var (
 		AttributePrinterLocation:        TagText,
 		AttributePrinterResolution:      TagResolution,
 		AttributePrinterState:           TagEnum,
-		AttributePrinterStateReason:     TagKeyword,
+		AttributePrinterStateReasons:    TagKeyword,
 		AttributePrinterURI:             TagUri,
 		AttributePurgeJobs:              TagBoolean,
 		AttributeRequestedAttributes:    TagKeyword,

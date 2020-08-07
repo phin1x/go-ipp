@@ -167,7 +167,7 @@ func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, err
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(name)
 	req.OperationAttributes[AttributePPDName] = ppd
 	req.OperationAttributes[AttributePrinterIsShared] = shared
-	req.PrinterAttributes[AttributePrinterStateReason] = "none"
+	req.PrinterAttributes[AttributePrinterStateReasons] = "none"
 	req.PrinterAttributes[AttributeDeviceURI] = deviceURI
 	req.PrinterAttributes[AttributePrinterInfo] = information
 	req.PrinterAttributes[AttributePrinterLocation] = location

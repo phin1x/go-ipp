@@ -26,7 +26,7 @@ func NewCUPSClientWithAdapter(username string, adapter Adapter) *CUPSClient {
 func (c *CUPSClient) GetDevices() (map[string]Attributes, error) {
 	req := NewRequest(OperationCupsGetDevices, 1)
 
-	resp, err := c.SendRequest(c.getHttpUri("", nil), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("", nil), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *CUPSClient) MoveJob(jobID int, destPrinter string) error {
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
 	req.PrinterAttributes[AttributeJobPrinterURI] = c.getPrinterUri(destPrinter)
 
-	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("jobs", ""), req, nil)
 	return err
 }
 
@@ -56,7 +56,7 @@ func (c *CUPSClient) MoveAllJob(srcPrinter, destPrinter string) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(srcPrinter)
 	req.PrinterAttributes[AttributeJobPrinterURI] = c.getPrinterUri(destPrinter)
 
-	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("jobs", ""), req, nil)
 	return err
 }
 
@@ -64,7 +64,7 @@ func (c *CUPSClient) MoveAllJob(srcPrinter, destPrinter string) error {
 func (c *CUPSClient) GetPPDs() (map[string]Attributes, error) {
 	req := NewRequest(OperationCupsGetPPDs, 1)
 
-	resp, err := c.SendRequest(c.getHttpUri("", nil), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("", nil), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (c *CUPSClient) AcceptJobs(printer string) error {
 	req := NewRequest(OperationCupsAcceptJobs, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -92,7 +92,7 @@ func (c *CUPSClient) RejectJobs(printer string) error {
 	req := NewRequest(OperationCupsRejectJobs, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -124,7 +124,7 @@ func (c *CUPSClient) AddPrinterToClass(class, printer string) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getClassUri(class)
 	req.PrinterAttributes[AttributeMemberURIs] = memberURIList
 
-	_, err = c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err = c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -154,7 +154,7 @@ func (c *CUPSClient) DeletePrinterFromClass(class, printer string) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getClassUri(class)
 	req.PrinterAttributes[AttributeMemberURIs] = memberURIList
 
-	_, err = c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err = c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -163,7 +163,7 @@ func (c *CUPSClient) DeleteClass(class string) error {
 	req := NewRequest(OperationCupsDeleteClass, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getClassUri(class)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -179,7 +179,7 @@ func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, err
 	req.PrinterAttributes[AttributePrinterLocation] = location
 	req.PrinterAttributes[AttributePrinterErrorPolicy] = string(errorPolicy)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -189,7 +189,7 @@ func (c *CUPSClient) SetPrinterPPD(printer, ppd string) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.OperationAttributes[AttributePPDName] = ppd
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -199,7 +199,7 @@ func (c *CUPSClient) SetPrinterDeviceURI(printer, deviceURI string) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.PrinterAttributes[AttributeDeviceURI] = deviceURI
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -209,7 +209,7 @@ func (c *CUPSClient) SetPrinterIsShared(printer string, shared bool) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.OperationAttributes[AttributePrinterIsShared] = shared
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -219,7 +219,7 @@ func (c *CUPSClient) SetPrinterErrorPolicy(printer string, errorPolicy string) e
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.PrinterAttributes[AttributePrinterErrorPolicy] = string(errorPolicy)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -229,7 +229,7 @@ func (c *CUPSClient) SetPrinterInformation(printer, information string) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.PrinterAttributes[AttributePrinterInfo] = information
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -239,7 +239,7 @@ func (c *CUPSClient) SetPrinterLocation(printer, location string) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.PrinterAttributes[AttributePrinterLocation] = location
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -248,7 +248,7 @@ func (c *CUPSClient) DeletePrinter(printer string) error {
 	req := NewRequest(OperationCupsDeletePrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -262,7 +262,7 @@ func (c *CUPSClient) GetPrinters(attributes []string) (map[string]Attributes, er
 		req.OperationAttributes[AttributeRequestedAttributes] = append(attributes, AttributePrinterName)
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("", nil), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("", nil), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +286,7 @@ func (c *CUPSClient) GetClasses(attributes []string) (map[string]Attributes, err
 		req.OperationAttributes[AttributeRequestedAttributes] = append(attributes, AttributePrinterName)
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("", nil), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("", nil), req, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/user"
 	"strconv"
 )
 
@@ -43,13 +42,6 @@ func NewSocketAdapter(host string, useTLS bool) *SocketAdapter {
 
 //DoRequest performs the given IPP request to the given URL, returning the IPP response or an error if one occurred
 func (h *SocketAdapter) SendRequest(url string, r *Request, _ io.Writer) (*Response, error) {
-	// set user field
-	user, err := user.Current()
-	if err != nil {
-		return nil, fmt.Errorf("unable to lookup current user: %v", err)
-	}
-	r.OperationAttributes[AttributeRequestingUserName] = user.Username
-
 	for i := 0; i < h.requestRetryLimit; i++ {
 		// encode request
 		payload, err := r.Encode()

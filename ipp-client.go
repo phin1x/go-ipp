@@ -1,16 +1,11 @@
 package ipp
 
 import (
-	"bytes"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
-	"net"
-	"net/http"
 	"os"
 	"path"
-	"strconv"
 )
 
 // Document wraps an io.Reader with more information, needed for encoding
@@ -23,45 +18,26 @@ type Document struct {
 
 // IPPClient implements a generic ipp client
 type IPPClient struct {
-	host     string
-	port     int
 	username string
-	password string
-	useTLS   bool
-
-	client *http.Client
+	adapter  Adapter
 }
 
-// NewIPPClient creates a new generic ipp client
+// NewIPPClient creates a new generic ipp client (used HttpAdapter internally)
 func NewIPPClient(host string, port int, username, password string, useTLS bool) *IPPClient {
-	httpClient := http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-	}
+	adapter := NewHttpAdapter(host, port, username, password, useTLS)
 
-	return &IPPClient{host, port, username, password, useTLS, &httpClient}
+	return &IPPClient{
+		username: username,
+		adapter:  adapter,
+	}
 }
 
-func (c *IPPClient) getHttpUri(namespace string, object interface{}) string {
-	proto := "http"
-	if c.useTLS {
-		proto = "https"
+// NewIPPClientWithAdapter creates a new generic ipp client with given Adapter
+func NewIPPClientWithAdapter(username string, adapter Adapter) *IPPClient {
+	return &IPPClient{
+		username: username,
+		adapter:  adapter,
 	}
-
-	uri := fmt.Sprintf("%s://%s:%d", proto, c.host, c.port)
-
-	if namespace != "" {
-		uri = fmt.Sprintf("%s/%s", uri, namespace)
-	}
-
-	if object != nil {
-		uri = fmt.Sprintf("%s/%v", uri, object)
-	}
-
-	return uri
 }
 
 func (c *IPPClient) getPrinterUri(printer string) string {
@@ -78,53 +54,11 @@ func (c *IPPClient) getClassUri(printer string) string {
 
 // SendRequest sends a request to a remote uri end returns the response
 func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData io.Writer) (*Response, error) {
-	payload, err := req.Encode()
-	if err != nil {
-		return nil, err
+	if _, ok := req.OperationAttributes[AttributeRequestingUserName]; ok == false {
+		req.OperationAttributes[AttributeRequestingUserName] = c.username
 	}
 
-	var body io.Reader
-	size := len(payload)
-
-	if req.File != nil && req.FileSize != -1 {
-		size += req.FileSize
-
-		body = io.MultiReader(bytes.NewBuffer(payload), req.File)
-	} else {
-		body = bytes.NewBuffer(payload)
-	}
-
-	httpReq, err := http.NewRequest("POST", url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq.Header.Set("Content-Length", strconv.Itoa(size))
-	httpReq.Header.Set("Content-Type", ContentTypeIPP)
-
-	if c.username != "" && c.password != "" {
-		httpReq.SetBasicAuth(c.username, c.password)
-	}
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return nil, err
-	}
-	defer httpResp.Body.Close()
-
-	if httpResp.StatusCode != 200 {
-		return nil, HTTPError{
-			Code: httpResp.StatusCode,
-		}
-	}
-
-	resp, err := NewResponseDecoder(httpResp.Body).Decode(additionalResponseData)
-	if err != nil {
-		return nil, err
-	}
-
-	err = resp.CheckForErrors()
-	return resp, err
+	return c.adapter.SendRequest(url, req, additionalResponseData)
 }
 
 // PrintDocuments prints one or more documents using a Create-Job operation followed by one or more Send-Document operation(s). custom job settings can be specified via the jobAttributes parameter
@@ -144,7 +78,7 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 		req.JobAttributes[key] = value
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return -1, err
 	}
@@ -168,7 +102,7 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 		req.File = doc.Document
 		req.FileSize = doc.Size
 
-		_, err = c.SendRequest(c.getHttpUri("printers", printer), req, nil)
+		_, err = c.SendRequest(c.adapter.GetHttpUri("printers", printer), req, nil)
 		if err != nil {
 			return -1, err
 		}
@@ -198,7 +132,7 @@ func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[str
 	req.File = doc.Document
 	req.FileSize = doc.Size
 
-	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return -1, err
 	}
@@ -251,7 +185,7 @@ func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (A
 		req.OperationAttributes[AttributeRequestedAttributes] = attributes
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("printers", printer), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +202,7 @@ func (c *IPPClient) ResumePrinter(printer string) error {
 	req := NewRequest(OperationResumePrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -277,7 +211,7 @@ func (c *IPPClient) PausePrinter(printer string) error {
 	req := NewRequest(OperationPausePrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -292,7 +226,7 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 		req.OperationAttributes[AttributeRequestedAttributes] = attributes
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("jobs", jobID), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("jobs", jobID), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +270,7 @@ func (c *IPPClient) GetJobs(printer, class string, whichJobs string, myJobs bool
 		req.OperationAttributes[AttributeRequestedAttributes] = append(attributes, AttributeJobID)
 	}
 
-	resp, err := c.SendRequest(c.getHttpUri("", nil), req, nil)
+	resp, err := c.SendRequest(c.adapter.GetHttpUri("", nil), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +290,7 @@ func (c *IPPClient) CancelJob(jobID int, purge bool) error {
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
 	req.OperationAttributes[AttributePurgeJobs] = purge
 
-	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("jobs", ""), req, nil)
 	return err
 }
 
@@ -366,7 +300,7 @@ func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.OperationAttributes[AttributePurgeJobs] = purge
 
-	_, err := c.SendRequest(c.getHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
@@ -375,7 +309,7 @@ func (c *IPPClient) RestartJob(jobID int) error {
 	req := NewRequest(OperationRestartJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
 
-	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("jobs", ""), req, nil)
 	return err
 }
 
@@ -385,17 +319,11 @@ func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
 	req.JobAttributes[AttributeHoldJobUntil] = holdUntil
 
-	_, err := c.SendRequest(c.getHttpUri("jobs", ""), req, nil)
+	_, err := c.SendRequest(c.adapter.GetHttpUri("jobs", ""), req, nil)
 	return err
 }
 
 // TestConnection tests if a tcp connection to the remote server is possible
 func (c *IPPClient) TestConnection() error {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", c.host, c.port))
-	if err != nil {
-		return err
-	}
-	conn.Close()
-
-	return nil
+	return c.adapter.TestConnection()
 }

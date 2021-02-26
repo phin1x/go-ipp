@@ -1,16 +1,11 @@
 package ipp
 
 import (
-	"bytes"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
-	"net"
-	"net/http"
 	"os"
 	"path"
-	"strconv"
 )
 
 // Document wraps an io.Reader with more information, needed for encoding
@@ -23,45 +18,30 @@ type Document struct {
 
 // IPPClient implements a generic ipp client
 type IPPClient struct {
-	host     string
-	port     int
 	username string
-	password string
-	useTLS   bool
-
-	client *http.Client
+	adapter  Adapter
 }
 
-// NewIPPClient creates a new generic ipp client
+// NewIPPClient creates a new generic ipp client (used HttpAdapter internally)
 func NewIPPClient(host string, port int, username, password string, useTLS bool) *IPPClient {
-	httpClient := http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-	}
+	adapter := NewHttpAdapter(host, port, username, password, useTLS)
 
-	return &IPPClient{host, port, username, password, useTLS, &httpClient}
+	return &IPPClient{
+		username: username,
+		adapter:  adapter,
+	}
+}
+
+// NewIPPClientWithAdapter creates a new generic ipp client with given Adapter
+func NewIPPClientWithAdapter(username string, adapter Adapter) *IPPClient {
+	return &IPPClient{
+		username: username,
+		adapter:  adapter,
+	}
 }
 
 func (c *IPPClient) getHttpUri(namespace string, object interface{}) string {
-	proto := "http"
-	if c.useTLS {
-		proto = "https"
-	}
-
-	uri := fmt.Sprintf("%s://%s:%d", proto, c.host, c.port)
-
-	if namespace != "" {
-		uri = fmt.Sprintf("%s/%s", uri, namespace)
-	}
-
-	if object != nil {
-		uri = fmt.Sprintf("%s/%v", uri, object)
-	}
-
-	return uri
+	return c.adapter.GetHttpUri(namespace, object)
 }
 
 func (c *IPPClient) getPrinterUri(printer string) string {
@@ -78,53 +58,7 @@ func (c *IPPClient) getClassUri(printer string) string {
 
 // SendRequest sends a request to a remote uri end returns the response
 func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData io.Writer) (*Response, error) {
-	payload, err := req.Encode()
-	if err != nil {
-		return nil, err
-	}
-
-	var body io.Reader
-	size := len(payload)
-
-	if req.File != nil && req.FileSize != -1 {
-		size += req.FileSize
-
-		body = io.MultiReader(bytes.NewBuffer(payload), req.File)
-	} else {
-		body = bytes.NewBuffer(payload)
-	}
-
-	httpReq, err := http.NewRequest("POST", url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq.Header.Set("Content-Length", strconv.Itoa(size))
-	httpReq.Header.Set("Content-Type", ContentTypeIPP)
-
-	if c.username != "" && c.password != "" {
-		httpReq.SetBasicAuth(c.username, c.password)
-	}
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return nil, err
-	}
-	defer httpResp.Body.Close()
-
-	if httpResp.StatusCode != 200 {
-		return nil, HTTPError{
-			Code: httpResp.StatusCode,
-		}
-	}
-
-	resp, err := NewResponseDecoder(httpResp.Body).Decode(additionalResponseData)
-	if err != nil {
-		return nil, err
-	}
-
-	err = resp.CheckForErrors()
-	return resp, err
+	return c.adapter.SendRequest(url, req, additionalResponseData)
 }
 
 // PrintDocuments prints one or more documents using a Create-Job operation followed by one or more Send-Document operation(s). custom job settings can be specified via the jobAttributes parameter
@@ -391,11 +325,5 @@ func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
 
 // TestConnection tests if a tcp connection to the remote server is possible
 func (c *IPPClient) TestConnection() error {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", c.host, c.port))
-	if err != nil {
-		return err
-	}
-	conn.Close()
-
-	return nil
+	return c.adapter.TestConnection()
 }

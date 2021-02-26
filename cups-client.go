@@ -10,9 +10,15 @@ type CUPSClient struct {
 	*IPPClient
 }
 
-// NewCUPSClient creates a new cups ipp client
+// NewCUPSClient creates a new cups ipp client (used HttpAdapter internally)
 func NewCUPSClient(host string, port int, username, password string, useTLS bool) *CUPSClient {
 	ippClient := NewIPPClient(host, port, username, password, useTLS)
+	return &CUPSClient{ippClient}
+}
+
+// NewCUPSClient creates a new cups ipp client with given Adapter
+func NewCUPSClientWithAdapter(username string, adapter Adapter) *CUPSClient {
+	ippClient := NewIPPClientWithAdapter(username, adapter)
 	return &CUPSClient{ippClient}
 }
 

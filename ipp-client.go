@@ -231,11 +231,11 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 		return nil, err
 	}
 
-	if len(resp.PrinterAttributes) == 0 {
+	if len(resp.JobAttributes) == 0 {
 		return nil, errors.New("server doesn't return any job attributes")
 	}
 
-	return resp.PrinterAttributes[0], nil
+	return resp.JobAttributes[0], nil
 }
 
 // GetJobs returns jobs from a printer or class

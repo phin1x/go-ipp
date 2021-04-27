@@ -12,8 +12,8 @@ import (
 	"strconv"
 )
 
-var socketNotFoundError = errors.New("unable to locate CUPS socket")
-var certNotFoundError = errors.New("unable to locate CUPS certificate")
+var SocketNotFoundError = errors.New("unable to locate CUPS socket")
+var CertNotFoundError = errors.New("unable to locate CUPS certificate")
 
 var (
 	DefaultSocketSearchPaths = []string{"/var/run/cupsd", "/var/run/cups/cups.sock", "/run/cups/cups.sock"}
@@ -61,7 +61,7 @@ func (h *SocketAdapter) SendRequest(url string, r *Request, _ io.Writer) (*Respo
 
 		// if cert isn't found, do a request to generate it
 		cert, err := h.GetCert()
-		if err != nil && err != certNotFoundError {
+		if err != nil && err != CertNotFoundError {
 			return nil, err
 		}
 
@@ -137,7 +137,7 @@ func (h *SocketAdapter) GetSocket() (string, error) {
 		}
 	}
 
-	return "", socketNotFoundError
+	return "", SocketNotFoundError
 }
 
 //GetCert returns the current CUPs authentication certificate by searching CertSearchPaths
@@ -161,7 +161,7 @@ func (h *SocketAdapter) GetCert() (string, error) {
 		return buf.String(), nil
 	}
 
-	return "", certNotFoundError
+	return "", CertNotFoundError
 }
 
 func (h *SocketAdapter) GetHttpUri(namespace string, object interface{}) string {

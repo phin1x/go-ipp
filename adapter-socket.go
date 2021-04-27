@@ -40,8 +40,9 @@ func NewSocketAdapter(host string, useTLS bool) *SocketAdapter {
 	}
 }
 
-//DoRequest performs the given IPP request to the given URL, returning the IPP response or an error if one occurred
-func (h *SocketAdapter) SendRequest(url string, r *Request, _ io.Writer) (*Response, error) {
+//DoRequest performs the given IPP request to the given URL, returning the IPP response or an error if one occurred.
+//Additional data will be written to an io.Writer if additionalData is not nil
+func (h *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Writer) (*Response, error) {
 	for i := 0; i < h.requestRetryLimit; i++ {
 		// encode request
 		payload, err := r.Encode()
@@ -104,7 +105,7 @@ func (h *SocketAdapter) SendRequest(url string, r *Request, _ io.Writer) (*Respo
 		resp.Body.Close()
 
 		// decode reply
-		ippResp, err := NewResponseDecoder(bytes.NewReader(buf.Bytes())).Decode(nil)
+		ippResp, err := NewResponseDecoder(bytes.NewReader(buf.Bytes())).Decode(additionalData)
 		if err != nil {
 			return nil, fmt.Errorf("unable to decode IPP response: %v", err)
 		}

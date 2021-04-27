@@ -186,5 +186,14 @@ func (h *SocketAdapter) GetHttpUri(namespace string, object interface{}) string 
 }
 
 func (h *SocketAdapter) TestConnection() error {
+	sock, err := h.GetSocket()
+	if err != nil {
+		return err
+	}
+	conn, err := net.Dial("unix", sock)
+	if err != nil {
+		return err
+	}
+	conn.Close()
 	return nil
 }

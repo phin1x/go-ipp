@@ -20,14 +20,15 @@ var (
 	DefaultCertSearchPaths   = []string{"/etc/cups/certs/0", "/run/cups/certs/0"}
 )
 
-const defaultRequestRetryLimit = 3
+const DefaultRequestRetryLimit = 3
 
 type SocketAdapter struct {
 	host              string
 	useTLS            bool
 	SocketSearchPaths []string
 	CertSearchPaths   []string
-	requestRetryLimit int
+	//RequestRetryLimit is the number of times a request will be retried when receiving an authorized status. This usually happens when a CUPs cert is expired, and a retry will use the newly generated cert. Default 3.
+	RequestRetryLimit int
 }
 
 func NewSocketAdapter(host string, useTLS bool) *SocketAdapter {
@@ -36,14 +37,14 @@ func NewSocketAdapter(host string, useTLS bool) *SocketAdapter {
 		useTLS:            useTLS,
 		SocketSearchPaths: DefaultSocketSearchPaths,
 		CertSearchPaths:   DefaultCertSearchPaths,
-		requestRetryLimit: defaultRequestRetryLimit,
+		RequestRetryLimit: DefaultRequestRetryLimit,
 	}
 }
 
 //DoRequest performs the given IPP request to the given URL, returning the IPP response or an error if one occurred.
 //Additional data will be written to an io.Writer if additionalData is not nil
 func (h *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Writer) (*Response, error) {
-	for i := 0; i < h.requestRetryLimit; i++ {
+	for i := 0; i < h.RequestRetryLimit; i++ {
 		// encode request
 		payload, err := r.Encode()
 		if err != nil {

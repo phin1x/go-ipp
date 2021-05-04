@@ -399,6 +399,7 @@ var (
 		AttributePrinterInfo:            TagText,
 		AttributePrinterIsAcceptingJobs: TagBoolean,
 		AttributePrinterIsShared:        TagBoolean,
+		AttributePrinterName:            TagName,
 		AttributePrinterLocation:        TagText,
 		AttributePrinterResolution:      TagResolution,
 		AttributePrinterState:           TagEnum,

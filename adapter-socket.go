@@ -51,7 +51,18 @@ func (h *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Wr
 			return nil, fmt.Errorf("unable to encode IPP request: %v", err)
 		}
 
-		req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+		var body io.Reader
+		size := len(payload)
+
+		if r.File != nil && r.FileSize != -1 {
+			size += r.FileSize
+
+			body = io.MultiReader(bytes.NewBuffer(payload), r.File)
+		} else {
+			body = bytes.NewBuffer(payload)
+		}
+
+		req, err := http.NewRequest("POST", url, body)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create HTTP request: %v", err)
 		}
@@ -67,7 +78,7 @@ func (h *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Wr
 			return nil, err
 		}
 
-		req.Header.Set("Content-Length", strconv.Itoa(len(payload)))
+		req.Header.Set("Content-Length", strconv.Itoa(size))
 		req.Header.Set("Content-Type", ContentTypeIPP)
 		req.Header.Set("Authorization", fmt.Sprintf("Local %s", cert))
 

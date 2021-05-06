@@ -308,6 +308,7 @@ const (
 	AttributeLastDocument           = "last-document"
 	AttributeMyJobs                 = "my-jobs"
 	AttributePPDName                = "ppd-name"
+	AttributePPDMakeAndModel        = "ppd-make-and-model"
 	AttributePrinterIsShared        = "printer-is-shared"
 	AttributePrinterURI             = "printer-uri"
 	AttributePurgeJobs              = "purge-jobs"
@@ -393,6 +394,7 @@ var (
 		AttributeNumberUp:               TagInteger,
 		AttributeOrientationRequested:   TagEnum,
 		AttributePPDName:                TagName,
+		AttributePPDMakeAndModel:        TagText,
 		AttributeNumberOfDocuments:      TagInteger,
 		AttributePrintQuality:           TagEnum,
 		AttributePrinterErrorPolicy:     TagName,

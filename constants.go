@@ -352,6 +352,7 @@ const (
 	AttributeJobKilobyteOctets      = "job-k-octets"
 	AttributeNumberOfDocuments      = "number-of-documents"
 	AttributeJobOriginatingUserName = "job-originating-user-name"
+	AttributeOutputOrder            = "outputorder"
 )
 
 // Default attributes
@@ -414,5 +415,6 @@ var (
 		AttributeFirstJobID:             TagInteger,
 		AttributeStatusMessage:          TagText,
 		AttributeLimit:                  TagInteger,
+		AttributeOutputOrder:            TagEnum,
 	}
 )

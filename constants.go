@@ -415,6 +415,6 @@ var (
 		AttributeFirstJobID:             TagInteger,
 		AttributeStatusMessage:          TagText,
 		AttributeLimit:                  TagInteger,
-		AttributeOutputOrder:            TagEnum,
+		AttributeOutputOrder:            TagName,
 	}
 )

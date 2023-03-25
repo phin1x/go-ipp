@@ -44,12 +44,10 @@ func (h *HttpAdapter) SendRequest(url string, req *Request, additionalResponseDa
 		return nil, err
 	}
 
-	var body io.Reader
 	size := len(payload)
-
+	var body io.Reader
 	if req.File != nil && req.FileSize != -1 {
 		size += req.FileSize
-
 		body = io.MultiReader(bytes.NewBuffer(payload), req.File)
 	} else {
 		body = bytes.NewBuffer(payload)
@@ -79,13 +77,25 @@ func (h *HttpAdapter) SendRequest(url string, req *Request, additionalResponseDa
 		}
 	}
 
-	resp, err := NewResponseDecoder(httpResp.Body).Decode(additionalResponseData)
+	// buffer response to avoid read issues
+	buf := new(bytes.Buffer)
+	if httpResp.ContentLength > 0 {
+		buf.Grow(int(httpResp.ContentLength))
+	}
+	if _, err := io.Copy(buf, httpResp.Body); err != nil {
+		return nil, fmt.Errorf("unable to buffer response: %w", err)
+	}
+
+	ippResp, err := NewResponseDecoder(buf).Decode(additionalResponseData)
 	if err != nil {
 		return nil, err
 	}
 
-	err = resp.CheckForErrors()
-	return resp, err
+	if err = ippResp.CheckForErrors(); err != nil {
+		return nil, fmt.Errorf("received error IPP response: %w", err)
+	}
+
+	return ippResp, nil
 }
 
 func (h *HttpAdapter) GetHttpUri(namespace string, object interface{}) string {

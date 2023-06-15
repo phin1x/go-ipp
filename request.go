@@ -71,10 +71,8 @@ func (r *Request) Encode() ([]byte, error) {
 	}
 
 	if len(r.OperationAttributes) > 0 {
-		for attr, value := range r.OperationAttributes {
-			if err := enc.Encode(attr, value); err != nil {
-				return nil, err
-			}
+		if err := r.encodeOperationAttributes(enc); err != nil {
+			return nil, err
 		}
 	}
 
@@ -105,6 +103,31 @@ func (r *Request) Encode() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (r *Request) encodeOperationAttributes(enc *AttributeEncoder) error {
+	ordered := []string{
+		AttributeCharset,
+		AttributeNaturalLanguage,
+		AttributePrinterURI,
+		AttributeJobID,
+	}
+
+	for _, attr := range ordered {
+		if value, ok := r.OperationAttributes[attr]; ok {
+			delete(r.OperationAttributes, attr)
+			if err := enc.Encode(attr, value); err != nil {
+				return err
+			}
+		}
+	}
+
+	for attr, value := range r.OperationAttributes {
+		if err := enc.Encode(attr, value); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // RequestDecoder reads and decodes a request from a stream

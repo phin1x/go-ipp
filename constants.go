@@ -298,61 +298,67 @@ const (
 
 // known ipp attributes
 const (
-	AttributeCopies                 = "copies"
-	AttributeDocumentFormat         = "document-format"
-	AttributeDocumentName           = "document-name"
-	AttributeJobID                  = "job-id"
-	AttributeJobName                = "job-name"
-	AttributeJobPriority            = "job-priority"
-	AttributeJobURI                 = "job-uri"
-	AttributeLastDocument           = "last-document"
-	AttributeMyJobs                 = "my-jobs"
-	AttributePPDName                = "ppd-name"
-	AttributePPDMakeAndModel        = "ppd-make-and-model"
-	AttributePrinterIsShared        = "printer-is-shared"
-	AttributePrinterURI             = "printer-uri"
-	AttributePurgeJobs              = "purge-jobs"
-	AttributeRequestedAttributes    = "requested-attributes"
-	AttributeRequestingUserName     = "requesting-user-name"
-	AttributeWhichJobs              = "which-jobs"
-	AttributeFirstJobID             = "first-job-id"
-	AttributeLimit                  = "limit"
-	AttributeStatusMessage          = "status-message"
-	AttributeCharset                = "attributes-charset"
-	AttributeNaturalLanguage        = "attributes-natural-language"
-	AttributeDeviceURI              = "device-uri"
-	AttributeHoldJobUntil           = "job-hold-until"
-	AttributePrinterErrorPolicy     = "printer-error-policy"
-	AttributePrinterInfo            = "printer-info"
-	AttributePrinterLocation        = "printer-location"
-	AttributePrinterName            = "printer-name"
-	AttributePrinterStateReasons    = "printer-state-reasons"
-	AttributeJobPrinterURI          = "job-printer-uri"
-	AttributeMemberURIs             = "member-uris"
-	AttributeDocumentNumber         = "document-number"
-	AttributeDocumentState          = "document-state"
-	AttributeFinishings             = "finishings"
-	AttributeJobHoldUntil           = "hold-job-until"
-	AttributeJobSheets              = "job-sheets"
-	AttributeJobState               = "job-state"
-	AttributeJobStateReason         = "job-state-reason"
-	AttributeMedia                  = "media"
-	AttributeNumberUp               = "number-up"
-	AttributeOrientationRequested   = "orientation-requested"
-	AttributePrintQuality           = "print-quality"
-	AttributePrinterIsAcceptingJobs = "printer-is-accepting-jobs"
-	AttributePrinterResolution      = "printer-resolution"
-	AttributePrinterState           = "printer-state"
-	AttributeMemberNames            = "member-names"
-	AttributePrinterType            = "printer-type"
-	AttributePrinterMakeAndModel    = "printer-make-and-model"
-	AttributePrinterStateMessage    = "printer-state-message"
-	AttributePrinterUriSupported    = "printer-uri-supported"
-	AttributeJobMediaProgress       = "job-media-progress"
-	AttributeJobKilobyteOctets      = "job-k-octets"
-	AttributeNumberOfDocuments      = "number-of-documents"
-	AttributeJobOriginatingUserName = "job-originating-user-name"
-	AttributeOutputOrder            = "outputorder"
+	AttributeCopies                  = "copies"
+	AttributeDocumentFormat          = "document-format"
+	AttributeDocumentName            = "document-name"
+	AttributeJobID                   = "job-id"
+	AttributeJobName                 = "job-name"
+	AttributeJobPriority             = "job-priority"
+	AttributeJobURI                  = "job-uri"
+	AttributeLastDocument            = "last-document"
+	AttributeMyJobs                  = "my-jobs"
+	AttributePPDName                 = "ppd-name"
+	AttributePPDMakeAndModel         = "ppd-make-and-model"
+	AttributePrinterIsShared         = "printer-is-shared"
+	AttributePrinterURI              = "printer-uri"
+	AttributePurgeJobs               = "purge-jobs"
+	AttributeRequestedAttributes     = "requested-attributes"
+	AttributeRequestingUserName      = "requesting-user-name"
+	AttributeWhichJobs               = "which-jobs"
+	AttributeFirstJobID              = "first-job-id"
+	AttributeLimit                   = "limit"
+	AttributeStatusMessage           = "status-message"
+	AttributeCharset                 = "attributes-charset"
+	AttributeNaturalLanguage         = "attributes-natural-language"
+	AttributeDeviceURI               = "device-uri"
+	AttributeHoldJobUntil            = "job-hold-until"
+	AttributePrinterErrorPolicy      = "printer-error-policy"
+	AttributePrinterInfo             = "printer-info"
+	AttributePrinterLocation         = "printer-location"
+	AttributePrinterName             = "printer-name"
+	AttributePrinterStateReasons     = "printer-state-reasons"
+	AttributeJobPrinterURI           = "job-printer-uri"
+	AttributeMemberURIs              = "member-uris"
+	AttributeDocumentNumber          = "document-number"
+	AttributeDocumentState           = "document-state"
+	AttributeFinishings              = "finishings"
+	AttributeJobHoldUntil            = "hold-job-until"
+	AttributeJobSheets               = "job-sheets"
+	AttributeJobState                = "job-state"
+	AttributeJobStateReason          = "job-state-reason"
+	AttributeMedia                   = "media"
+	AttributeNumberUp                = "number-up"
+	AttributeOrientationRequested    = "orientation-requested"
+	AttributePrintQuality            = "print-quality"
+	AttributePrinterIsAcceptingJobs  = "printer-is-accepting-jobs"
+	AttributePrinterResolution       = "printer-resolution"
+	AttributePrinterState            = "printer-state"
+	AttributeMemberNames             = "member-names"
+	AttributePrinterType             = "printer-type"
+	AttributePrinterMakeAndModel     = "printer-make-and-model"
+	AttributePrinterStateMessage     = "printer-state-message"
+	AttributePrinterUriSupported     = "printer-uri-supported"
+	AttributeJobMediaProgress        = "job-media-progress"
+	AttributeJobKilobyteOctets       = "job-k-octets"
+	AttributeNumberOfDocuments       = "number-of-documents"
+	AttributeJobOriginatingUserName  = "job-originating-user-name"
+	AttributeOutputOrder             = "outputorder"
+	AttributeJobStateReasons         = "job-state-reasons"
+	AttributeJobStateMessage         = "job-state-message"
+	AttributeJobPrinterStateReasons  = "job-printer-state-reasons"
+	AttributeJobPrinterStateMessage  = "job-printer-state-message"
+	AttributeJobImpressionsCompleted = "job-impressions-completed"
+	AttributePrintScaling            = "print-scaling"
 )
 
 // Default attributes
@@ -369,52 +375,58 @@ var (
 // Attribute to tag mapping
 var (
 	AttributeTagMapping = map[string]int8{
-		AttributeCharset:                TagCharset,
-		AttributeNaturalLanguage:        TagLanguage,
-		AttributeCopies:                 TagInteger,
-		AttributeDeviceURI:              TagUri,
-		AttributeDocumentFormat:         TagMimeType,
-		AttributeDocumentName:           TagName,
-		AttributeDocumentNumber:         TagInteger,
-		AttributeDocumentState:          TagEnum,
-		AttributeFinishings:             TagEnum,
-		AttributeJobHoldUntil:           TagKeyword,
-		AttributeHoldJobUntil:           TagKeyword,
-		AttributeJobID:                  TagInteger,
-		AttributeJobName:                TagName,
-		AttributeJobPrinterURI:          TagUri,
-		AttributeJobPriority:            TagInteger,
-		AttributeJobSheets:              TagName,
-		AttributeJobState:               TagEnum,
-		AttributeJobStateReason:         TagKeyword,
-		AttributeJobURI:                 TagUri,
-		AttributeLastDocument:           TagBoolean,
-		AttributeMedia:                  TagKeyword,
-		AttributeMemberURIs:             TagUri,
-		AttributeMyJobs:                 TagBoolean,
-		AttributeNumberUp:               TagInteger,
-		AttributeOrientationRequested:   TagEnum,
-		AttributePPDName:                TagName,
-		AttributePPDMakeAndModel:        TagText,
-		AttributeNumberOfDocuments:      TagInteger,
-		AttributePrintQuality:           TagEnum,
-		AttributePrinterErrorPolicy:     TagName,
-		AttributePrinterInfo:            TagText,
-		AttributePrinterIsAcceptingJobs: TagBoolean,
-		AttributePrinterIsShared:        TagBoolean,
-		AttributePrinterName:            TagName,
-		AttributePrinterLocation:        TagText,
-		AttributePrinterResolution:      TagResolution,
-		AttributePrinterState:           TagEnum,
-		AttributePrinterStateReasons:    TagKeyword,
-		AttributePrinterURI:             TagUri,
-		AttributePurgeJobs:              TagBoolean,
-		AttributeRequestedAttributes:    TagKeyword,
-		AttributeRequestingUserName:     TagName,
-		AttributeWhichJobs:              TagKeyword,
-		AttributeFirstJobID:             TagInteger,
-		AttributeStatusMessage:          TagText,
-		AttributeLimit:                  TagInteger,
-		AttributeOutputOrder:            TagName,
+		AttributeCharset:                 TagCharset,
+		AttributeNaturalLanguage:         TagLanguage,
+		AttributeCopies:                  TagInteger,
+		AttributeDeviceURI:               TagUri,
+		AttributeDocumentFormat:          TagMimeType,
+		AttributeDocumentName:            TagName,
+		AttributeDocumentNumber:          TagInteger,
+		AttributeDocumentState:           TagEnum,
+		AttributeFinishings:              TagEnum,
+		AttributeJobHoldUntil:            TagKeyword,
+		AttributeHoldJobUntil:            TagKeyword,
+		AttributeJobID:                   TagInteger,
+		AttributeJobName:                 TagName,
+		AttributeJobPrinterURI:           TagUri,
+		AttributeJobPriority:             TagInteger,
+		AttributeJobSheets:               TagName,
+		AttributeJobState:                TagEnum,
+		AttributeJobStateReason:          TagKeyword,
+		AttributeJobURI:                  TagUri,
+		AttributeLastDocument:            TagBoolean,
+		AttributeMedia:                   TagKeyword,
+		AttributeMemberURIs:              TagUri,
+		AttributeMyJobs:                  TagBoolean,
+		AttributeNumberUp:                TagInteger,
+		AttributeOrientationRequested:    TagEnum,
+		AttributePPDName:                 TagName,
+		AttributePPDMakeAndModel:         TagText,
+		AttributeNumberOfDocuments:       TagInteger,
+		AttributePrintQuality:            TagEnum,
+		AttributePrinterErrorPolicy:      TagName,
+		AttributePrinterInfo:             TagText,
+		AttributePrinterIsAcceptingJobs:  TagBoolean,
+		AttributePrinterIsShared:         TagBoolean,
+		AttributePrinterName:             TagName,
+		AttributePrinterLocation:         TagText,
+		AttributePrinterResolution:       TagResolution,
+		AttributePrinterState:            TagEnum,
+		AttributePrinterStateReasons:     TagKeyword,
+		AttributePrinterURI:              TagUri,
+		AttributePurgeJobs:               TagBoolean,
+		AttributeRequestedAttributes:     TagKeyword,
+		AttributeRequestingUserName:      TagName,
+		AttributeWhichJobs:               TagKeyword,
+		AttributeFirstJobID:              TagInteger,
+		AttributeStatusMessage:           TagText,
+		AttributeLimit:                   TagInteger,
+		AttributeOutputOrder:             TagName,
+		AttributeJobStateReasons:         TagString,
+		AttributeJobStateMessage:         TagString,
+		AttributeJobPrinterStateReasons:  TagString,
+		AttributeJobPrinterStateMessage:  TagString,
+		AttributeJobImpressionsCompleted: TagInteger,
+		AttributePrintScaling:            TagKeyword,
 	}
 )

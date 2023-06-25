@@ -14,6 +14,7 @@ go get -u github.com/phin1x/go-ipp
 
 ## Features
 
+* only depends on the standard go library (only dependency is for testing)
 * basic ipp 2.0 compatible Client
 * extended client for cups server
 * create custom ipp requests
@@ -22,6 +23,7 @@ go get -u github.com/phin1x/go-ipp
 ## Example
 
 Print a file with the ipp client
+
 ```go
 package main
 
@@ -36,6 +38,7 @@ func main() {
 ```
 
 Craft and send a custom request
+
 ```go
 
 package main
@@ -44,7 +47,7 @@ import "github.com/phin1x/go-ipp"
 
 func main() {             
     // define a ipp request
-    req := ipp.NewRequest(OperationGetJobs, 1)
+    req := ipp.NewRequest(ipp.OperationGetJobs, 1)
     req.OperationAttributes[ipp.AttributeWhichJobs] = "completed"
     req.OperationAttributes[ipp.AttributeMyJobs] = myJobs
     req.OperationAttributes[ipp.AttributeFirstJobID] = 42
@@ -89,8 +92,8 @@ func main() {
     }
     
     // check if the response status is "ok"
-    if resp.StatusCode == ipp.StatusOk {
-        panic(resp.StatusCode)
+	if err := resp.CheckForErrors(); err != nil {
+        panic(err)
     }
     
     // do something with the returned data

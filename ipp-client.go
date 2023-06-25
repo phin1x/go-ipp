@@ -241,7 +241,7 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 // GetJobs returns jobs from a printer or class
 func (c *IPPClient) GetJobs(printer, class string, whichJobs string, myJobs bool, firstJobId, limit int, attributes []string) (map[int]Attributes, error) {
 	req := NewRequest(OperationGetJobs, 1)
-	req.OperationAttributes[AttributeWhichJobs] = string(whichJobs)
+	req.OperationAttributes[AttributeWhichJobs] = whichJobs
 	req.OperationAttributes[AttributeMyJobs] = myJobs
 
 	if printer != "" {

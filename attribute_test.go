@@ -2,6 +2,7 @@ package ipp
 
 import (
 	"bytes"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -42,25 +43,18 @@ var attributeTestCases = []struct {
 	},
 }
 
-func TestAttributeEncoding(t *testing.T) {
+func TestAttributeDecoder_Decode(t *testing.T) {
 	buf := new(bytes.Buffer)
 	enc := NewAttributeEncoder(buf)
 
 	for _, c := range attributeTestCases {
-		if err := enc.Encode(c.Attribute, c.Value); err != nil {
-			t.Errorf("error while encoding attribute %s with value %v: %v", c.Attribute, c.Value, err)
-		}
-
-		result := buf.Bytes()
-		if !bytes.Equal(result, c.Bytes) {
-			t.Errorf("encoding result is not correct, expected %v, got %v", c.Bytes, result)
-		}
-
+		assert.Nil(t, enc.Encode(c.Attribute, c.Value))
+		assert.Equal(t, buf.Bytes(), c.Bytes, "encoding result is not correct")
 		buf.Reset()
 	}
 }
 
-func TestAttributeDecoder(t *testing.T) {
+func TestAttributeEncoder_Encode(t *testing.T) {
 	buf := new(bytes.Buffer)
 	dec := NewAttributeDecoder(buf)
 
@@ -70,17 +64,9 @@ func TestAttributeDecoder(t *testing.T) {
 		buf.Write(c.Bytes[1:])
 
 		attr, err := dec.Decode(tag)
-		if err != nil {
-			t.Errorf("error while decoding bytes %v: %v", c.Bytes, err)
-		}
-
-		if attr.Name != c.Attribute {
-			t.Errorf("decoded attribute is not correct, expected %v, got %v", c.Attribute, attr.Name)
-		}
-
-		if attr.Value != c.Value {
-			t.Errorf("decoded value is not correct, expected %v, got %v", c.Attribute, attr.Name)
-		}
+		assert.Nil(t, err)
+		assert.Equal(t, c.Attribute, attr.Name, "decoded attribute is not correct")
+		assert.Equal(t, c.Value, attr.Value, "decoded value is not correct")
 
 		buf.Reset()
 	}

@@ -16,7 +16,7 @@ func NewCUPSClient(host string, port int, username, password string, useTLS bool
 	return &CUPSClient{ippClient}
 }
 
-// NewCUPSClient creates a new cups ipp client with given Adapter
+// NewCUPSClientWithAdapter creates a new cups ipp client with given Adapter
 func NewCUPSClientWithAdapter(username string, adapter Adapter) *CUPSClient {
 	ippClient := NewIPPClientWithAdapter(username, adapter)
 	return &CUPSClient{ippClient}
@@ -177,7 +177,7 @@ func (c *CUPSClient) CreatePrinter(name, deviceURI, ppd string, shared bool, err
 	req.PrinterAttributes[AttributeDeviceURI] = deviceURI
 	req.PrinterAttributes[AttributePrinterInfo] = information
 	req.PrinterAttributes[AttributePrinterLocation] = location
-	req.PrinterAttributes[AttributePrinterErrorPolicy] = string(errorPolicy)
+	req.PrinterAttributes[AttributePrinterErrorPolicy] = errorPolicy
 
 	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
@@ -217,7 +217,7 @@ func (c *CUPSClient) SetPrinterIsShared(printer string, shared bool) error {
 func (c *CUPSClient) SetPrinterErrorPolicy(printer string, errorPolicy string) error {
 	req := NewRequest(OperationCupsAddModifyPrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
-	req.PrinterAttributes[AttributePrinterErrorPolicy] = string(errorPolicy)
+	req.PrinterAttributes[AttributePrinterErrorPolicy] = errorPolicy
 
 	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err

@@ -74,44 +74,37 @@ func (r *Response) Encode() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := binary.Write(buf, binary.BigEndian, int8(TagOperation)); err != nil {
+	if err := binary.Write(buf, binary.BigEndian, TagOperation); err != nil {
 		return nil, err
 	}
 
-	if err := enc.Encode(AttributeCharset, Charset); err != nil {
-		return nil, err
+	if r.OperationAttributes == nil {
+		r.OperationAttributes = make(Attributes, 0)
 	}
 
-	if err := enc.Encode(AttributeNaturalLanguage, CharsetLanguage); err != nil {
-		return nil, err
-	}
-
-	if len(r.OperationAttributes) > 0 {
-		for name, attr := range r.OperationAttributes {
-			if len(attr) == 0 {
-				continue
-			}
-
-			values := make([]interface{}, len(attr))
-			for i, v := range attr {
-				values[i] = v.Value
-			}
-
-			if len(values) == 1 {
-				if err := enc.Encode(name, values[0]); err != nil {
-					return nil, err
-				}
-			} else {
-				if err := enc.Encode(name, values); err != nil {
-					return nil, err
-				}
-			}
+	if _, found := r.OperationAttributes[AttributeCharset]; !found {
+		r.OperationAttributes[AttributeCharset] = []Attribute{
+			{
+				Value: Charset,
+			},
 		}
+	}
+
+	if _, found := r.OperationAttributes[AttributeNaturalLanguage]; !found {
+		r.OperationAttributes[AttributeNaturalLanguage] = []Attribute{
+			{
+				Value: CharsetLanguage,
+			},
+		}
+	}
+
+	if err := r.encodeOperationAttributes(enc); err != nil {
+		return nil, err
 	}
 
 	if len(r.PrinterAttributes) > 0 {
 		for _, printerAttr := range r.PrinterAttributes {
-			if err := binary.Write(buf, binary.BigEndian, int8(TagPrinter)); err != nil {
+			if err := binary.Write(buf, binary.BigEndian, TagPrinter); err != nil {
 				return nil, err
 			}
 
@@ -140,7 +133,7 @@ func (r *Response) Encode() ([]byte, error) {
 
 	if len(r.JobAttributes) > 0 {
 		for _, jobAttr := range r.JobAttributes {
-			if err := binary.Write(buf, binary.BigEndian, int8(TagJob)); err != nil {
+			if err := binary.Write(buf, binary.BigEndian, TagJob); err != nil {
 				return nil, err
 			}
 
@@ -172,6 +165,49 @@ func (r *Response) Encode() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (r *Response) encodeOperationAttributes(enc *AttributeEncoder) error {
+	ordered := []string{
+		AttributeCharset,
+		AttributeNaturalLanguage,
+		AttributePrinterURI,
+		AttributeJobID,
+	}
+
+	for _, name := range ordered {
+		if attr, ok := r.OperationAttributes[name]; ok {
+			delete(r.OperationAttributes, name)
+			if err := encodeOperationAttribute(enc, name, attr); err != nil {
+				return err
+			}
+		}
+	}
+
+	for name, attr := range r.OperationAttributes {
+		if err := encodeOperationAttribute(enc, name, attr); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func encodeOperationAttribute(enc *AttributeEncoder, name string, attr []Attribute) error {
+	if len(attr) == 0 {
+		return nil
+	}
+
+	values := make([]interface{}, len(attr))
+	for i, v := range attr {
+		values[i] = v.Value
+	}
+
+	if len(values) == 1 {
+		return enc.Encode(name, values[0])
+	}
+
+	return enc.Encode(name, values)
 }
 
 // ResponseDecoder reads and decodes a response from a stream

@@ -29,7 +29,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 		return fmt.Errorf("cannot get tag of attribute %s", attribute)
 	}
 
-	switch value.(type) {
+	switch v := value.(type) {
 	case int:
 		if tag != TagInteger && tag != TagEnum {
 			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
@@ -43,7 +43,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 
-		if err := e.encodeInteger(int32(value.(int))); err != nil {
+		if err := e.encodeInteger(int32(v)); err != nil {
 			return err
 		}
 	case int16:
@@ -59,7 +59,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 
-		if err := e.encodeInteger(int32(value.(int16))); err != nil {
+		if err := e.encodeInteger(int32(v)); err != nil {
 			return err
 		}
 	case int8:
@@ -75,7 +75,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 
-		if err := e.encodeInteger(int32(value.(int8))); err != nil {
+		if err := e.encodeInteger(int32(v)); err != nil {
 			return err
 		}
 	case int32:
@@ -91,7 +91,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 
-		if err := e.encodeInteger(value.(int32)); err != nil {
+		if err := e.encodeInteger(v); err != nil {
 			return err
 		}
 	case int64:
@@ -107,7 +107,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 
-		if err := e.encodeInteger(int32(value.(int64))); err != nil {
+		if err := e.encodeInteger(int32(v)); err != nil {
 			return err
 		}
 	case []int:
@@ -115,7 +115,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
-		for index, val := range value.([]int) {
+		for index, val := range v {
 			if err := e.encodeTag(tag); err != nil {
 				return err
 			}
@@ -139,7 +139,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
-		for index, val := range value.([]int16) {
+		for index, val := range v {
 			if err := e.encodeTag(tag); err != nil {
 				return err
 			}
@@ -163,7 +163,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
-		for index, val := range value.([]int8) {
+		for index, val := range v {
 			if err := e.encodeTag(tag); err != nil {
 				return err
 			}
@@ -187,7 +187,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
-		for index, val := range value.([]int32) {
+		for index, val := range v {
 			if err := e.encodeTag(tag); err != nil {
 				return err
 			}
@@ -211,7 +211,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
-		for index, val := range value.([]int64) {
+		for index, val := range v {
 			if err := e.encodeTag(tag); err != nil {
 				return err
 			}
@@ -243,7 +243,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 
-		if err := e.encodeBoolean(value.(bool)); err != nil {
+		if err := e.encodeBoolean(v); err != nil {
 			return err
 		}
 	case []bool:
@@ -251,7 +251,7 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return fmt.Errorf("tag for attribute %s does not match with value type", attribute)
 		}
 
-		for index, val := range value.([]bool) {
+		for index, val := range v {
 			if err := e.encodeTag(tag); err != nil {
 				return err
 			}
@@ -279,11 +279,11 @@ func (e *AttributeEncoder) Encode(attribute string, value interface{}) error {
 			return err
 		}
 
-		if err := e.encodeString(value.(string)); err != nil {
+		if err := e.encodeString(v); err != nil {
 			return err
 		}
 	case []string:
-		for index, val := range value.([]string) {
+		for index, val := range v {
 			if err := e.encodeTag(tag); err != nil {
 				return err
 			}

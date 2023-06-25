@@ -54,7 +54,7 @@ func (c *IPPClient) getClassUri(printer string) string {
 
 // SendRequest sends a request to a remote uri end returns the response
 func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData io.Writer) (*Response, error) {
-	if _, ok := req.OperationAttributes[AttributeRequestingUserName]; ok == false {
+	if _, ok := req.OperationAttributes[AttributeRequestingUserName]; !ok {
 		req.OperationAttributes[AttributeRequestingUserName] = c.username
 	}
 

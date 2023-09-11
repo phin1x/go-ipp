@@ -310,6 +310,7 @@ const (
 	AttributePPDName                 = "ppd-name"
 	AttributePPDMakeAndModel         = "ppd-make-and-model"
 	AttributePrinterIsShared         = "printer-is-shared"
+	AttributePrinterIsTemporary      = "printer-is-temporary"
 	AttributePrinterURI              = "printer-uri"
 	AttributePurgeJobs               = "purge-jobs"
 	AttributeRequestedAttributes     = "requested-attributes"
@@ -408,6 +409,7 @@ var (
 		AttributePrinterInfo:             TagText,
 		AttributePrinterIsAcceptingJobs:  TagBoolean,
 		AttributePrinterIsShared:         TagBoolean,
+		AttributePrinterIsTemporary:      TagBoolean,
 		AttributePrinterName:             TagName,
 		AttributePrinterLocation:         TagText,
 		AttributePrinterResolution:       TagResolution,

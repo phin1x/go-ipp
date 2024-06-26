@@ -338,6 +338,7 @@ const (
 	AttributeJobState                = "job-state"
 	AttributeJobStateReason          = "job-state-reason"
 	AttributeMedia                   = "media"
+	AttributeSides                   = "sides"
 	AttributeNumberUp                = "number-up"
 	AttributeOrientationRequested    = "orientation-requested"
 	AttributePrintQuality            = "print-quality"
@@ -365,12 +366,16 @@ const (
 // Default attributes
 var (
 	DefaultClassAttributes   = []string{AttributePrinterName, AttributeMemberNames}
-	DefaultPrinterAttributes = []string{AttributePrinterName, AttributePrinterType, AttributePrinterLocation, AttributePrinterInfo,
+	DefaultPrinterAttributes = []string{
+		AttributePrinterName, AttributePrinterType, AttributePrinterLocation, AttributePrinterInfo,
 		AttributePrinterMakeAndModel, AttributePrinterState, AttributePrinterStateMessage, AttributePrinterStateReasons,
-		AttributePrinterUriSupported, AttributeDeviceURI, AttributePrinterIsShared}
-	DefaultJobAttributes = []string{AttributeJobID, AttributeJobName, AttributePrinterURI, AttributeJobState, AttributeJobStateReason,
+		AttributePrinterUriSupported, AttributeDeviceURI, AttributePrinterIsShared,
+	}
+	DefaultJobAttributes = []string{
+		AttributeJobID, AttributeJobName, AttributePrinterURI, AttributeJobState, AttributeJobStateReason,
 		AttributeJobHoldUntil, AttributeJobMediaProgress, AttributeJobKilobyteOctets, AttributeNumberOfDocuments, AttributeCopies,
-		AttributeJobOriginatingUserName}
+		AttributeJobOriginatingUserName,
+	}
 )
 
 // Attribute to tag mapping
@@ -397,6 +402,7 @@ var (
 		AttributeJobURI:                  TagUri,
 		AttributeLastDocument:            TagBoolean,
 		AttributeMedia:                   TagKeyword,
+		AttributeSides:                   TagKeyword,
 		AttributeMemberURIs:              TagUri,
 		AttributeMyJobs:                  TagBoolean,
 		AttributeNumberUp:                TagInteger,

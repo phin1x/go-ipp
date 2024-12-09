@@ -17,9 +17,12 @@ type Response struct {
 	StatusCode int16
 	RequestId  int32
 
-	OperationAttributes Attributes
-	PrinterAttributes   []Attributes
-	JobAttributes       []Attributes
+	OperationAttributes   Attributes
+	PrinterAttributes     []Attributes
+	JobAttributes         []Attributes
+	UnsupportedAttributes []Attributes
+
+	Data []byte
 }
 
 // CheckForErrors checks the status code and returns a error if it is not zero. it also returns the status message if provided by the server
@@ -43,13 +46,14 @@ func (r *Response) CheckForErrors() error {
 // NewResponse creates a new ipp response
 func NewResponse(statusCode int16, reqID int32) *Response {
 	return &Response{
-		ProtocolVersionMajor: ProtocolVersionMajor,
-		ProtocolVersionMinor: ProtocolVersionMinor,
-		StatusCode:           statusCode,
-		RequestId:            reqID,
-		OperationAttributes:  make(Attributes),
-		PrinterAttributes:    make([]Attributes, 0),
-		JobAttributes:        make([]Attributes, 0),
+		ProtocolVersionMajor:  ProtocolVersionMajor,
+		ProtocolVersionMinor:  ProtocolVersionMinor,
+		StatusCode:            statusCode,
+		RequestId:             reqID,
+		OperationAttributes:   make(Attributes),
+		PrinterAttributes:     make([]Attributes, 0),
+		JobAttributes:         make([]Attributes, 0),
+		UnsupportedAttributes: make([]Attributes, 0),
 	}
 }
 
@@ -210,150 +214,9 @@ func encodeOperationAttribute(enc *AttributeEncoder, name string, attr []Attribu
 	return enc.Encode(name, values)
 }
 
-// ResponseDecoder reads and decodes a response from a stream
-type ResponseDecoder struct {
-	reader io.Reader
-}
-
-// NewResponseDecoder returns a new decoder that reads from r
-func NewResponseDecoder(r io.Reader) *ResponseDecoder {
-	return &ResponseDecoder{
-		reader: r,
-	}
-}
-
-// Decode decodes a ipp response into a response struct. additional data will be written to an io.Writer if data is not nil
-func (d *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
-	/*
-	   1 byte: Protocol Major Version - b
-	   1 byte: Protocol Minor Version - b
-	   2 byte: Status ID - h
-	   4 byte: Request ID - i
-	   1 byte: Operation Attribute Byte (\0x01)
-	   N times: Attributes
-	   1 byte: Attribute End Byte (\0x03)
-	*/
-
-	resp := new(Response)
-
-	// wrap the reader so we have more functionality
-	// reader := bufio.NewReader(d.reader)
-
-	if err := binary.Read(d.reader, binary.BigEndian, &resp.ProtocolVersionMajor); err != nil {
-		return nil, err
-	}
-
-	if err := binary.Read(d.reader, binary.BigEndian, &resp.ProtocolVersionMinor); err != nil {
-		return nil, err
-	}
-
-	if err := binary.Read(d.reader, binary.BigEndian, &resp.StatusCode); err != nil {
-		return nil, err
-	}
-
-	if err := binary.Read(d.reader, binary.BigEndian, &resp.RequestId); err != nil {
-		return nil, err
-	}
-
-	startByteSlice := make([]byte, 1)
-
-	tag := TagCupsInvalid
-	previousAttributeName := ""
-	tempAttributes := make(Attributes)
-	tagSet := false
-
-	attribDecoder := NewAttributeDecoder(d.reader)
-
-	// decode attribute buffer
-	for {
-		if _, err := d.reader.Read(startByteSlice); err != nil {
-			// when we read from a stream, we may get an EOF if we want to read the end tag
-			// all data should be read and we can ignore the error
-			if err == io.EOF {
-				break
-			}
-			return nil, err
-		}
-
-		startByte := int8(startByteSlice[0])
-
-		// check if attributes are completed
-		if startByte == TagEnd {
-			break
-		}
-
-		if startByte == TagOperation {
-			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
-				appendAttributeToResponse(resp, tag, tempAttributes)
-				tempAttributes = make(Attributes)
-			}
-
-			tag = TagOperation
-			tagSet = true
-		}
-
-		if startByte == TagJob {
-			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
-				appendAttributeToResponse(resp, tag, tempAttributes)
-				tempAttributes = make(Attributes)
-			}
-
-			tag = TagJob
-			tagSet = true
-		}
-
-		if startByte == TagPrinter {
-			if len(tempAttributes) > 0 && tag != TagCupsInvalid {
-				appendAttributeToResponse(resp, tag, tempAttributes)
-				tempAttributes = make(Attributes)
-			}
-
-			tag = TagPrinter
-			tagSet = true
-		}
-
-		if tagSet {
-			if _, err := d.reader.Read(startByteSlice); err != nil {
-				return nil, err
-			}
-			startByte = int8(startByteSlice[0])
-		}
-
-		attrib, err := attribDecoder.Decode(startByte)
-		if err != nil {
-			return nil, err
-		}
-
-		if attrib.Name != "" {
-			tempAttributes[attrib.Name] = append(tempAttributes[attrib.Name], *attrib)
-			previousAttributeName = attrib.Name
-		} else {
-			tempAttributes[previousAttributeName] = append(tempAttributes[previousAttributeName], *attrib)
-		}
-
-		tagSet = false
-	}
-
-	if len(tempAttributes) > 0 && tag != TagCupsInvalid {
-		appendAttributeToResponse(resp, tag, tempAttributes)
-	}
-
-	if data != nil {
-		if _, err := io.Copy(data, d.reader); err != nil {
-			return nil, err
-		}
-	}
-
-	return resp, nil
-}
-
-func appendAttributeToResponse(resp *Response, tag int8, attr map[string][]Attribute) {
-	switch tag {
-	case TagOperation:
-		resp.OperationAttributes = attr
-	case TagPrinter:
-		resp.PrinterAttributes = append(resp.PrinterAttributes, attr)
-	case TagJob:
-		resp.JobAttributes = append(resp.JobAttributes, attr)
-	}
+func (r *Response) Decode(reader io.Reader) error {
+	sm := NewResponseStateMachine()
+	sm.Response = r
+	_, err := sm.Decode(reader)
+	return err
 }

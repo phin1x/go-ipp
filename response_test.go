@@ -2,8 +2,9 @@ package ipp
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var responseTestCases = []struct {
@@ -57,12 +58,17 @@ func TestResponse_Encode(t *testing.T) {
 }
 
 func TestResponseDecoder_Decode(t *testing.T) {
-	for _, c := range responseTestCases {
+	for i, c := range responseTestCases {
 		if c.SkipDecoding {
+			// Keeping the test cases for encoding only because the bytes don't match
+			// the values set in the struct. I assume additional "default" Options are
+			// being set in the Encode step.
 			continue
 		}
-
-		response, err := NewResponseDecoder(bytes.NewReader(c.Bytes)).Decode(nil)
+		println(i)
+		decoder := NewResponseStateMachine()
+		response, err := decoder.Decode(bytes.NewReader(c.Bytes))
+		// response, err := NewResponseDecoder(bytes.NewReader(c.Bytes)).Decode(nil)
 		assert.Nil(t, err)
 		assert.Equal(t, &c.Response, response, "decoded response is not correct")
 	}

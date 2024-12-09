@@ -83,6 +83,10 @@ func (r *ResponseStateMachine) Decode(reader io.Reader) (*Response, error) {
 		switch r.State {
 		case ResponseStateInitial:
 			r.Response = &Response{}
+			// I'm unsure why Printer, Job and UnsupportedAttributes are arrays of Attributes
+			// instead of just a single Attributes like OperationAttributes, I'm going to
+			// keep it that way for now and initialize the first element of each array so I don't have
+			// to check for nil slices during decoding.
 			r.Response.OperationAttributes = make(Attributes)
 			r.Response.PrinterAttributes = make([]Attributes, 1)
 			r.Response.PrinterAttributes[0] = make(Attributes)
@@ -104,7 +108,11 @@ func (r *ResponseStateMachine) Decode(reader io.Reader) (*Response, error) {
 				return nil, err
 			}
 			r.State = ResponseStateAttributeGroupRead
+
 		case ResponseStateAttributeGroupRead:
+			// This state should only be entered once. Aftwards we can't know if we're decoding and
+			// `addtional value` or a new attribute group. So to avoid rewinding the reader we
+			// can skip reading the next byte (see next case/state).
 			if _, err := reader.Read(b); err != nil {
 				return nil, err
 			}
@@ -127,6 +135,11 @@ func (r *ResponseStateMachine) Decode(reader io.Reader) (*Response, error) {
 			default:
 				return nil, fmt.Errorf("unsupported attribute group: 0x%02x", r.currentAttributeGroupTag)
 			} // switch attribute group tag
+
+			// Note, I am not knowledageble enough concerning IPP to know if
+			// there are further attribute groups applicable to Respose. Technically
+			// and Tag < 0x10 is ok ... but other groups are not considered in Response.
+
 			r.State = ResponseStateAttribute
 		case ResponseStateAttribute:
 			if _, err := reader.Read(b); err != nil {
@@ -144,7 +157,7 @@ func (r *ResponseStateMachine) Decode(reader io.Reader) (*Response, error) {
 			if err := binary.Read(reader, binary.BigEndian, &r.currentLength); err != nil {
 				return nil, err
 			}
-			// if == 0 it's an additional value
+			// if == 0 it's an `additional value`
 			if r.currentLength == 0 {
 				r.State = ResponseStateAttributeValue
 				continue
@@ -176,13 +189,17 @@ func (r *ResponseStateMachine) Decode(reader io.Reader) (*Response, error) {
 			if _, err := reader.Read(bs); err != nil {
 				return nil, err
 			}
-
+			// We're always storing the attribute value as the
+			// an array of bytes contained in the response from the wire.
+			// Not sure whether the correct type is know for each attribute.
+			// It may be nice to make the Attribute type generic.
 			r.currentAttributes[r.currentAttributeName][0].Value = bs
 			// attr := r.currentAttributes[r.currentAttributeName][0]
 			// fmt.Printf("Attribute: %v\n", attr)
 
 			r.State = ResponseStateAttribute
 		case ResponseStateData:
+			// The entire rest is Response data
 			if bs, err := io.ReadAll(reader); err != nil {
 				return nil, err
 			} else {

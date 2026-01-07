@@ -16,7 +16,7 @@ var SocketNotFoundError = errors.New("unable to locate CUPS socket")
 var CertNotFoundError = errors.New("unable to locate CUPS certificate")
 
 var (
-	DefaultSocketSearchPaths = []string{"/var/run/cupsd", "/var/run/cups/cups.sock", "/run/cups/cups.sock"}
+	DefaultSocketSearchPaths = []string{"/var/run/cupsd", "/var/run/cups/cups.sock", "/run/cups/cups.sock", "/private/var/run/cupsd"}
 	DefaultCertSearchPaths   = []string{"/etc/cups/certs/0", "/run/cups/certs/0"}
 )
 

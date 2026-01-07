@@ -19,8 +19,6 @@ type Response struct {
 	PrinterAttributes     []Attributes
 	JobAttributes         []Attributes
 	UnsupportedAttributes Attributes
-
-	Data []byte
 }
 
 // CheckForErrors checks the status code and returns a error if it is not zero. it also returns the status message if provided by the server

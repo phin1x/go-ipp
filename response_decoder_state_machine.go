@@ -42,7 +42,7 @@ func newResponseStateMachine() *responseDecoderStateMachine {
 	}
 }
 
-func (r *responseDecoderStateMachine) Decode(reader io.Reader) (*Response, error) {
+func (r *responseDecoderStateMachine) Decode(reader io.Reader, data io.Writer) (*Response, error) {
 	response := &Response{
 		OperationAttributes:   make(Attributes),
 		PrinterAttributes:     make([]Attributes, 0),
@@ -137,11 +137,11 @@ func (r *responseDecoderStateMachine) Decode(reader io.Reader) (*Response, error
 			r.currentAttributes[r.currentAttributeName] = attributes
 		case responseDecoderStateData:
 			// The entire rest is Response data
-			bs, err := io.ReadAll(reader)
-			if err != nil {
-				return nil, err
+			if data != nil {
+				if _, err := io.Copy(data, reader); err != nil {
+					return nil, err
+				}
 			}
-			response.Data = bs
 
 			return response, nil
 		}

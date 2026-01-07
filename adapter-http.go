@@ -38,7 +38,7 @@ func NewHttpAdapter(host string, port int, username, password string, useTLS boo
 	}
 }
 
-func (h *HttpAdapter) SendRequest(url string, req *Request, additionalResponseData io.Writer) (*Response, error) {
+func (h *HttpAdapter) SendRequest(url string, req *Request, additionalData io.Writer) (*Response, error) {
 	payload, err := req.Encode()
 	if err != nil {
 		return nil, err
@@ -86,9 +86,7 @@ func (h *HttpAdapter) SendRequest(url string, req *Request, additionalResponseDa
 		return nil, fmt.Errorf("unable to buffer response: %w", err)
 	}
 
-	decoder := newResponseStateMachine()
-	ippResp, err := decoder.Decode(buf)
-
+	ippResp, err := NewResponseDecoder(buf).Decode(additionalData)
 	if err != nil {
 		return nil, err
 	}

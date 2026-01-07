@@ -10,6 +10,6 @@ func NewResponseDecoder(reader io.Reader) *ResponseDecoder {
 	return &ResponseDecoder{reader: reader}
 }
 
-func (r *ResponseDecoder) Decode(reader io.Reader) (*Response, error) {
-	return newResponseStateMachine().Decode(reader)
+func (r *ResponseDecoder) Decode(data io.Writer) (*Response, error) {
+	return newResponseStateMachine().Decode(r.reader, data)
 }

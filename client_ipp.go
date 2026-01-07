@@ -1,6 +1,7 @@
 package ipp
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -54,6 +55,10 @@ func (c *IPPClient) getClassUri(printer string) string {
 
 // SendRequest sends a request to a remote uri end returns the response
 func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData io.Writer) (*Response, error) {
+	return c.SendRequestContext(context.Background(), url, req, additionalResponseData)
+}
+
+func (c *IPPClient) SendRequestContext(ctx context.Context, url string, req *Request, additionalResponseData io.Writer) (*Response, error) {
 	if _, ok := req.OperationAttributes[AttributeRequestingUserName]; !ok {
 		req.OperationAttributes[AttributeRequestingUserName] = c.username
 	}
@@ -62,7 +67,11 @@ func (c *IPPClient) SendRequest(url string, req *Request, additionalResponseData
 }
 
 // PrintDocuments prints one or more documents using a Create-Job operation followed by one or more Send-Document operation(s). custom job settings can be specified via the jobAttributes parameter
-func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttributes map[string]interface{}) (int, error) {
+func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttributes map[string]any) (int, error) {
+	return c.PrintDocumentsContext(context.Background(), docs, printer, jobAttributes)
+}
+
+func (c *IPPClient) PrintDocumentsContext(ctx context.Context, docs []Document, printer string, jobAttributes map[string]any) (int, error) {
 	printerURI := c.getPrinterUri(printer)
 
 	req := NewRequest(OperationCreateJob, 1)
@@ -78,7 +87,7 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 		req.JobAttributes[key] = value
 	}
 
-	resp, err := c.SendRequest(c.adapter.GetHttpUri("printers", printer), req, nil)
+	resp, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return -1, err
 	}
@@ -102,7 +111,7 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 		req.File = doc.Document
 		req.FileSize = doc.Size
 
-		_, err = c.SendRequest(c.adapter.GetHttpUri("printers", printer), req, nil)
+		_, err = c.SendRequestContext(ctx, c.adapter.GetHttpUri("printers", printer), req, nil)
 		if err != nil {
 			return -1, err
 		}
@@ -112,7 +121,11 @@ func (c *IPPClient) PrintDocuments(docs []Document, printer string, jobAttribute
 }
 
 // PrintJob prints a document using a Print-Job operation. custom job settings can be specified via the jobAttributes parameter
-func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[string]interface{}) (int, error) {
+func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[string]any) (int, error) {
+	return c.PrintJobContext(context.Background(), doc, printer, jobAttributes)
+}
+
+func (c *IPPClient) PrintJobContext(ctx context.Context, doc Document, printer string, jobAttributes map[string]any) (int, error) {
 	printerURI := c.getPrinterUri(printer)
 
 	req := NewRequest(OperationPrintJob, 1)
@@ -132,7 +145,7 @@ func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[str
 	req.File = doc.Document
 	req.FileSize = doc.Size
 
-	resp, err := c.SendRequest(c.adapter.GetHttpUri("printers", printer), req, nil)
+	resp, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return -1, err
 	}
@@ -147,7 +160,11 @@ func (c *IPPClient) PrintJob(doc Document, printer string, jobAttributes map[str
 }
 
 // PrintFile prints a local file on the file system. custom job settings can be specified via the jobAttributes parameter
-func (c *IPPClient) PrintFile(filePath, printer string, jobAttributes map[string]interface{}) (int, error) {
+func (c *IPPClient) PrintFile(filePath, printer string, jobAttributes map[string]any) (int, error) {
+	return c.PrintFileContext(context.Background(), filePath, printer, jobAttributes)
+}
+
+func (c *IPPClient) PrintFileContext(ctx context.Context, filePath, printer string, jobAttributes map[string]any) (int, error) {
 	fileStats, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
 		return -1, err
@@ -163,7 +180,7 @@ func (c *IPPClient) PrintFile(filePath, printer string, jobAttributes map[string
 
 	jobAttributes[AttributeJobName] = fileName
 
-	return c.PrintDocuments([]Document{
+	return c.PrintDocumentsContext(ctx, []Document{
 		{
 			Document: document,
 			Name:     fileName,
@@ -175,6 +192,10 @@ func (c *IPPClient) PrintFile(filePath, printer string, jobAttributes map[string
 
 // GetPrinterAttributes returns the requested attributes for the specified printer, if attributes is nil the default attributes will be used
 func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (Attributes, error) {
+	return c.GetPrinterAttributesContext(context.Background(), printer, attributes)
+}
+
+func (c *IPPClient) GetPrinterAttributesContext(ctx context.Context, printer string, attributes []string) (Attributes, error) {
 	req := NewRequest(OperationGetPrinterAttributes, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.OperationAttributes[AttributeRequestingUserName] = c.username
@@ -185,7 +206,7 @@ func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (A
 		req.OperationAttributes[AttributeRequestedAttributes] = attributes
 	}
 
-	resp, err := c.SendRequest(c.adapter.GetHttpUri("printers", printer), req, nil)
+	resp, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("printers", printer), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -199,24 +220,36 @@ func (c *IPPClient) GetPrinterAttributes(printer string, attributes []string) (A
 
 // ResumePrinter resumes a printer
 func (c *IPPClient) ResumePrinter(printer string) error {
+	return c.ResumePrinterContext(context.Background(), printer)
+}
+
+func (c *IPPClient) ResumePrinterContext(ctx context.Context, printer string) error {
 	req := NewRequest(OperationResumePrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
 // PausePrinter pauses a printer
 func (c *IPPClient) PausePrinter(printer string) error {
+	return c.PausePrinterContext(context.Background(), printer)
+}
+
+func (c *IPPClient) PausePrinterContext(ctx context.Context, printer string) error {
 	req := NewRequest(OperationPausePrinter, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 
-	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
 // GetJobAttributes returns the requested attributes for the specified job, if attributes is nil the default job will be used
 func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes, error) {
+	return c.GetJobAttributesContext(context.Background(), jobID, attributes)
+}
+
+func (c *IPPClient) GetJobAttributesContext(ctx context.Context, jobID int, attributes []string) (Attributes, error) {
 	req := NewRequest(OperationGetJobAttributes, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
 
@@ -226,7 +259,7 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 		req.OperationAttributes[AttributeRequestedAttributes] = attributes
 	}
 
-	resp, err := c.SendRequest(c.adapter.GetHttpUri("jobs", jobID), req, nil)
+	resp, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("jobs", jobID), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -240,6 +273,10 @@ func (c *IPPClient) GetJobAttributes(jobID int, attributes []string) (Attributes
 
 // GetJobs returns jobs from a printer or class
 func (c *IPPClient) GetJobs(printer, class string, whichJobs string, myJobs bool, firstJobId, limit int, attributes []string) (map[int]Attributes, error) {
+	return c.GetJobsContext(context.Background(), printer, class, whichJobs, myJobs, firstJobId, limit, attributes)
+}
+
+func (c *IPPClient) GetJobsContext(ctx context.Context, printer, class string, whichJobs string, myJobs bool, firstJobId, limit int, attributes []string) (map[int]Attributes, error) {
 	req := NewRequest(OperationGetJobs, 1)
 	req.OperationAttributes[AttributeWhichJobs] = whichJobs
 	req.OperationAttributes[AttributeMyJobs] = myJobs
@@ -270,7 +307,7 @@ func (c *IPPClient) GetJobs(printer, class string, whichJobs string, myJobs bool
 		req.OperationAttributes[AttributeRequestedAttributes] = append(attributes, AttributeJobID)
 	}
 
-	resp, err := c.SendRequest(c.adapter.GetHttpUri("", nil), req, nil)
+	resp, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("", nil), req, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -286,40 +323,56 @@ func (c *IPPClient) GetJobs(printer, class string, whichJobs string, myJobs bool
 
 // CancelJob cancels a job. if purge is true, the job will also be removed
 func (c *IPPClient) CancelJob(jobID int, purge bool) error {
+	return c.CancelJobContext(context.Background(), jobID, purge)
+}
+
+func (c *IPPClient) CancelJobContext(ctx context.Context, jobID int, purge bool) error {
 	req := NewRequest(OperationCancelJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
 	req.OperationAttributes[AttributePurgeJobs] = purge
 
-	_, err := c.SendRequest(c.adapter.GetHttpUri("jobs", ""), req, nil)
+	_, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("jobs", ""), req, nil)
 	return err
 }
 
 // CancelAllJob cancels all jobs for a specified printer. if purge is true, the jobs will also be removed
 func (c *IPPClient) CancelAllJob(printer string, purge bool) error {
+	return c.CancelAllJobContext(context.Background(), printer, purge)
+}
+
+func (c *IPPClient) CancelAllJobContext(ctx context.Context, printer string, purge bool) error {
 	req := NewRequest(OperationCancelJobs, 1)
 	req.OperationAttributes[AttributePrinterURI] = c.getPrinterUri(printer)
 	req.OperationAttributes[AttributePurgeJobs] = purge
 
-	_, err := c.SendRequest(c.adapter.GetHttpUri("admin", ""), req, nil)
+	_, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("admin", ""), req, nil)
 	return err
 }
 
 // RestartJob restarts a job
 func (c *IPPClient) RestartJob(jobID int) error {
+	return c.RestartJobContext(context.Background(), jobID)
+}
+
+func (c *IPPClient) RestartJobContext(ctx context.Context, jobID int) error {
 	req := NewRequest(OperationRestartJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
 
-	_, err := c.SendRequest(c.adapter.GetHttpUri("jobs", ""), req, nil)
+	_, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("jobs", ""), req, nil)
 	return err
 }
 
 // HoldJobUntil holds a job
 func (c *IPPClient) HoldJobUntil(jobID int, holdUntil string) error {
+	return c.HoldJobUntilContext(context.Background(), jobID, holdUntil)
+}
+
+func (c *IPPClient) HoldJobUntilContext(ctx context.Context, jobID int, holdUntil string) error {
 	req := NewRequest(OperationRestartJob, 1)
 	req.OperationAttributes[AttributeJobURI] = c.getJobUri(jobID)
 	req.JobAttributes[AttributeHoldJobUntil] = holdUntil
 
-	_, err := c.SendRequest(c.adapter.GetHttpUri("jobs", ""), req, nil)
+	_, err := c.SendRequestContext(ctx, c.adapter.GetHttpUri("jobs", ""), req, nil)
 	return err
 }
 

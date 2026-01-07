@@ -2,6 +2,7 @@ package ipp
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -19,26 +20,37 @@ type HttpAdapter struct {
 	client   *http.Client
 }
 
-func NewHttpAdapter(host string, port int, username, password string, useTLS bool) *HttpAdapter {
-	httpClient := http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-	}
-
-	return &HttpAdapter{
+func NewHttpAdapter(host string, port int, username, password string, useTLS bool, opts ...HttpAdapterOption) *HttpAdapter {
+	adapter := &HttpAdapter{
 		host:     host,
 		port:     port,
 		username: username,
 		password: password,
 		useTLS:   useTLS,
-		client:   &httpClient,
 	}
+
+	for _, opt := range opts {
+		opt(adapter)
+	}
+
+	if adapter.client == nil {
+		adapter.client = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		}
+	}
+
+	return adapter
 }
 
-func (h *HttpAdapter) SendRequest(url string, req *Request, additionalData io.Writer) (*Response, error) {
+func (a *HttpAdapter) SendRequest(url string, req *Request, additionalData io.Writer) (*Response, error) {
+	return a.SendRequestContext(context.Background(), url, req, additionalData)
+}
+
+func (a *HttpAdapter) SendRequestContext(ctx context.Context, url string, req *Request, additionalData io.Writer) (*Response, error) {
 	payload, err := req.Encode()
 	if err != nil {
 		return nil, err
@@ -53,7 +65,7 @@ func (h *HttpAdapter) SendRequest(url string, req *Request, additionalData io.Wr
 		body = bytes.NewBuffer(payload)
 	}
 
-	httpReq, err := http.NewRequest("POST", url, body)
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -61,11 +73,11 @@ func (h *HttpAdapter) SendRequest(url string, req *Request, additionalData io.Wr
 	httpReq.Header.Set("Content-Length", strconv.Itoa(size))
 	httpReq.Header.Set("Content-Type", ContentTypeIPP)
 
-	if h.username != "" && h.password != "" {
-		httpReq.SetBasicAuth(h.username, h.password)
+	if a.username != "" && a.password != "" {
+		httpReq.SetBasicAuth(a.username, a.password)
 	}
 
-	httpResp, err := h.client.Do(httpReq)
+	httpResp, err := a.client.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -98,13 +110,13 @@ func (h *HttpAdapter) SendRequest(url string, req *Request, additionalData io.Wr
 	return ippResp, nil
 }
 
-func (h *HttpAdapter) GetHttpUri(namespace string, object interface{}) string {
+func (a *HttpAdapter) GetHttpUri(namespace string, object interface{}) string {
 	proto := "http"
-	if h.useTLS {
+	if a.useTLS {
 		proto = "https"
 	}
 
-	uri := fmt.Sprintf("%s://%s:%d", proto, h.host, h.port)
+	uri := fmt.Sprintf("%s://%s:%d", proto, a.host, a.port)
 
 	if namespace != "" {
 		uri = fmt.Sprintf("%s/%s", uri, namespace)
@@ -117,12 +129,11 @@ func (h *HttpAdapter) GetHttpUri(namespace string, object interface{}) string {
 	return uri
 }
 
-func (h *HttpAdapter) TestConnection() error {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", h.host, h.port))
+func (a *HttpAdapter) TestConnection() error {
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", a.host, a.port))
 	if err != nil {
 		return err
 	}
-	conn.Close()
-
+	_ = conn.Close()
 	return nil
 }

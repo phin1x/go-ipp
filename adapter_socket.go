@@ -43,8 +43,12 @@ func NewSocketAdapter(host string, useTLS bool) *SocketAdapter {
 
 // SendRequest performs the given IPP request to the given URL, returning the IPP response or an error if one occurred.
 // Additional data will be written to an io.Writer if additionalData is not nil
-func (h *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Writer) (*Response, error) {
-	for i := 0; i < h.RequestRetryLimit; i++ {
+func (a *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Writer) (*Response, error) {
+	return a.SendRequestContext(context.Background(), url, r, additionalData)
+}
+
+func (a *SocketAdapter) SendRequestContext(ctx context.Context, url string, r *Request, additionalData io.Writer) (*Response, error) {
+	for i := 0; i < a.RequestRetryLimit; i++ {
 		// encode request
 		payload, err := r.Encode()
 		if err != nil {
@@ -62,19 +66,19 @@ func (h *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Wr
 			body = bytes.NewBuffer(payload)
 		}
 
-		req, err := http.NewRequest("POST", url, body)
+		req, err := http.NewRequestWithContext(ctx, "POST", url, body)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create HTTP request: %w", err)
 		}
 
-		sock, err := h.GetSocket()
+		sock, err := a.GetSocket()
 		if err != nil {
 			return nil, err
 		}
 
 		// if cert isn't found, do a request to generate it
-		cert, err := h.GetCert()
-		if err != nil && err != CertNotFoundError {
+		cert, err := a.GetCert()
+		if err != nil && !errors.Is(err, CertNotFoundError) {
 			return nil, err
 		}
 
@@ -136,8 +140,8 @@ func (h *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Wr
 }
 
 // GetSocket returns the path to the cupsd socket by searching SocketSearchPaths
-func (h *SocketAdapter) GetSocket() (string, error) {
-	for _, path := range h.SocketSearchPaths {
+func (a *SocketAdapter) GetSocket() (string, error) {
+	for _, path := range a.SocketSearchPaths {
 		fi, err := os.Stat(path)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -157,8 +161,8 @@ func (h *SocketAdapter) GetSocket() (string, error) {
 }
 
 // GetCert returns the current CUPs authentication certificate by searching CertSearchPaths
-func (h *SocketAdapter) GetCert() (string, error) {
-	for _, path := range h.CertSearchPaths {
+func (a *SocketAdapter) GetCert() (string, error) {
+	for _, path := range a.CertSearchPaths {
 		f, err := os.Open(path)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -180,13 +184,13 @@ func (h *SocketAdapter) GetCert() (string, error) {
 	return "", CertNotFoundError
 }
 
-func (h *SocketAdapter) GetHttpUri(namespace string, object interface{}) string {
+func (a *SocketAdapter) GetHttpUri(namespace string, object interface{}) string {
 	proto := "http"
-	if h.useTLS {
+	if a.useTLS {
 		proto = "https"
 	}
 
-	uri := fmt.Sprintf("%s://%s", proto, h.host)
+	uri := fmt.Sprintf("%s://%s", proto, a.host)
 
 	if namespace != "" {
 		uri = fmt.Sprintf("%s/%s", uri, namespace)
@@ -199,8 +203,8 @@ func (h *SocketAdapter) GetHttpUri(namespace string, object interface{}) string 
 	return uri
 }
 
-func (h *SocketAdapter) TestConnection() error {
-	sock, err := h.GetSocket()
+func (a *SocketAdapter) TestConnection() error {
+	sock, err := a.GetSocket()
 	if err != nil {
 		return err
 	}
@@ -208,6 +212,6 @@ func (h *SocketAdapter) TestConnection() error {
 	if err != nil {
 		return err
 	}
-	conn.Close()
+	_ = conn.Close()
 	return nil
 }

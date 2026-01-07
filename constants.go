@@ -361,6 +361,21 @@ const (
 	AttributeJobPrinterStateMessage  = "job-printer-state-message"
 	AttributeJobImpressionsCompleted = "job-impressions-completed"
 	AttributePrintScaling            = "print-scaling"
+	AttributeMediaCol                = "media-col"
+	AttributeMediaColReady           = "media-col-ready"
+	AttributeMediaColDatabase        = "media-col-database"
+	AttributeMediaColDefault         = "media-col-default"
+	AttributeMediaSize               = "media-size"
+	AttributeMediaSizeName           = "media-size-name"
+	AttributeMediaSource             = "media-source"
+	AttributeMediaType               = "media-type"
+	AttributeMediaColor              = "media-color"
+	AttributeMediaLeftMargin         = "media-left-margin"
+	AttributeMediaRightMargin        = "media-right-margin"
+	AttributeMediaTopMargin          = "media-top-margin"
+	AttributeMediaBottomMargin       = "media-bottom-margin"
+	AttributeXDimension              = "x-dimension"
+	AttributeYDimension              = "y-dimension"
 )
 
 // Default attributes
@@ -435,4 +450,19 @@ var AttributeTagMapping = map[string]int8{
 	AttributeJobPrinterStateMessage:  TagString,
 	AttributeJobImpressionsCompleted: TagInteger,
 	AttributePrintScaling:            TagKeyword,
+	AttributeMediaCol:                TagBeginCollection,
+	AttributeMediaColReady:           TagBeginCollection,
+	AttributeMediaColDatabase:        TagBeginCollection,
+	AttributeMediaColDefault:         TagBeginCollection,
+	AttributeMediaSize:               TagBeginCollection,
+	AttributeMediaSizeName:           TagKeyword,
+	AttributeMediaSource:             TagKeyword,
+	AttributeMediaType:               TagKeyword,
+	AttributeMediaColor:              TagKeyword,
+	AttributeMediaLeftMargin:         TagInteger,
+	AttributeMediaRightMargin:        TagInteger,
+	AttributeMediaTopMargin:          TagInteger,
+	AttributeMediaBottomMargin:       TagInteger,
+	AttributeXDimension:              TagInteger,
+	AttributeYDimension:              TagInteger,
 }

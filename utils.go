@@ -24,6 +24,5 @@ func ParseControlFile(jobID int, spoolDirectory string) (*Response, error) {
 	}
 	defer controlFile.Close()
 
-	decoder := newResponseStateMachine()
-	return decoder.Decode(controlFile)
+	return NewResponseDecoder(controlFile).Decode(nil)
 }

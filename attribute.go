@@ -13,3 +13,5 @@ type Resolution struct {
 	Width  int32
 	Depth  int8
 }
+
+type Collection map[string][]Attribute

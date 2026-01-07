@@ -112,8 +112,10 @@ func hex2reader(hex string) *bytes.Reader {
 func TestResponseDecode(t *testing.T) {
 	reader := hex2reader(unsupportedResponse)
 
+	var additionalData bytes.Buffer
+
 	stateMachine := newResponseStateMachine()
-	response, err := stateMachine.Decode(reader)
+	response, err := stateMachine.Decode(reader, &additionalData)
 
 	if err != nil {
 		t.Errorf("Expected nil, got %v", err)
@@ -147,9 +149,9 @@ func TestResponseDecode(t *testing.T) {
 	printerStateMsg := printAttributes[AttributePrinterStateMessage][0]
 	assert.Equal(t, "Printer is ready to print", printerStateMsg.Value)
 
-	if response.Data != nil {
+	if additionalData.Len() > 0 {
 		should := []byte{0x01, 0x02, 0x03}
-		assert.Equal(t, should, response.Data)
+		assert.Equal(t, should, additionalData.Bytes())
 	} else {
 		t.Errorf("Expected Data, got nil")
 	}

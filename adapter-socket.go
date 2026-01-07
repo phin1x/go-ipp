@@ -120,7 +120,9 @@ func (h *SocketAdapter) SendRequest(url string, r *Request, additionalData io.Wr
 		httpResp.Body.Close()
 
 		// decode reply
-		ippResp, err := NewResponseDecoder(buf).Decode(additionalData)
+		decoder := NewResponseStateMachine()
+		ippResp, err := decoder.Decode(buf)
+
 		if err != nil {
 			return nil, fmt.Errorf("unable to decode IPP response: %w", err)
 		}

@@ -190,47 +190,47 @@ const (
 
 // ipp tags
 const (
-	TagCupsInvalid       int8 = -1
-	TagZero              int8 = 0x00
-	TagOperation         int8 = 0x01
-	TagJob               int8 = 0x02
-	TagEnd               int8 = 0x03
-	TagPrinter           int8 = 0x04
-	TagUnsupportedGroup  int8 = 0x05
-	TagSubscription      int8 = 0x06
-	TagEventNotification int8 = 0x07
-	TagResource          int8 = 0x08
-	TagDocument          int8 = 0x09
-	TagSystem            int8 = 0x0a
-	TagUnsupportedValue  int8 = 0x10
-	TagDefault           int8 = 0x11
-	TagUnknown           int8 = 0x12
-	TagNoValue           int8 = 0x13
-	TagNotSettable       int8 = 0x15
-	TagDeleteAttr        int8 = 0x16
-	TagAdminDefine       int8 = 0x17
-	TagInteger           int8 = 0x21
-	TagBoolean           int8 = 0x22
-	TagEnum              int8 = 0x23
-	TagString            int8 = 0x30
-	TagDate              int8 = 0x31
-	TagResolution        int8 = 0x32
-	TagRange             int8 = 0x33
-	TagBeginCollection   int8 = 0x34
-	TagTextLang          int8 = 0x35
-	TagNameLang          int8 = 0x36
-	TagEndCollection     int8 = 0x37
-	TagText              int8 = 0x41
-	TagName              int8 = 0x42
-	TagReservedString    int8 = 0x43
-	TagKeyword           int8 = 0x44
-	TagUri               int8 = 0x45
-	TagUriScheme         int8 = 0x46
-	TagCharset           int8 = 0x47
-	TagLanguage          int8 = 0x48
-	TagMimeType          int8 = 0x49
-	TagMemberName        int8 = 0x4a
-	TagExtension         int8 = 0x7f
+	TagCupsInvalid                int8 = -1
+	TagZero                       int8 = 0x00
+	TagDelimiterOperation         int8 = 0x01
+	TagDelimiterJob               int8 = 0x02
+	TagDelimiterEnd               int8 = 0x03
+	TagDelimiterPrinter           int8 = 0x04
+	TagDelimiterUnsupported       int8 = 0x05
+	TagDelimiterSubscription      int8 = 0x06
+	TagDelimiterEventNotification int8 = 0x07
+	TagDelimiterResource          int8 = 0x08
+	TagDelimiterDocument          int8 = 0x09
+	TagDelimiterSystem            int8 = 0x0a
+	TagUnsupported                int8 = 0x10
+	TagDefault                    int8 = 0x11
+	TagUnknown                    int8 = 0x12
+	TagNoValue                    int8 = 0x13
+	TagNotSettable                int8 = 0x15
+	TagDeleteAttr                 int8 = 0x16
+	TagAdminDefine                int8 = 0x17
+	TagInteger                    int8 = 0x21
+	TagBoolean                    int8 = 0x22
+	TagEnum                       int8 = 0x23
+	TagString                     int8 = 0x30
+	TagDate                       int8 = 0x31
+	TagResolution                 int8 = 0x32
+	TagRange                      int8 = 0x33
+	TagBeginCollection            int8 = 0x34
+	TagTextLang                   int8 = 0x35
+	TagNameLang                   int8 = 0x36
+	TagEndCollection              int8 = 0x37
+	TagText                       int8 = 0x41
+	TagName                       int8 = 0x42
+	TagReservedString             int8 = 0x43
+	TagKeyword                    int8 = 0x44
+	TagUri                        int8 = 0x45
+	TagUriScheme                  int8 = 0x46
+	TagCharset                    int8 = 0x47
+	TagLanguage                   int8 = 0x48
+	TagMimeType                   int8 = 0x49
+	TagMemberName                 int8 = 0x4a
+	TagExtension                  int8 = 0x7f
 )
 
 // job states
@@ -378,63 +378,61 @@ var (
 	}
 )
 
-// Attribute to tag mapping
-var (
-	AttributeTagMapping = map[string]int8{
-		AttributeCharset:                 TagCharset,
-		AttributeNaturalLanguage:         TagLanguage,
-		AttributeCopies:                  TagInteger,
-		AttributeDeviceURI:               TagUri,
-		AttributeDocumentFormat:          TagMimeType,
-		AttributeDocumentName:            TagName,
-		AttributeDocumentNumber:          TagInteger,
-		AttributeDocumentState:           TagEnum,
-		AttributeFinishings:              TagEnum,
-		AttributeJobHoldUntil:            TagKeyword,
-		AttributeHoldJobUntil:            TagKeyword,
-		AttributeJobID:                   TagInteger,
-		AttributeJobName:                 TagName,
-		AttributeJobPrinterURI:           TagUri,
-		AttributeJobPriority:             TagInteger,
-		AttributeJobSheets:               TagName,
-		AttributeJobState:                TagEnum,
-		AttributeJobStateReason:          TagKeyword,
-		AttributeJobURI:                  TagUri,
-		AttributeLastDocument:            TagBoolean,
-		AttributeMedia:                   TagKeyword,
-		AttributeSides:                   TagKeyword,
-		AttributeMemberURIs:              TagUri,
-		AttributeMyJobs:                  TagBoolean,
-		AttributeNumberUp:                TagInteger,
-		AttributeOrientationRequested:    TagEnum,
-		AttributePPDName:                 TagName,
-		AttributePPDMakeAndModel:         TagText,
-		AttributeNumberOfDocuments:       TagInteger,
-		AttributePrintQuality:            TagEnum,
-		AttributePrinterErrorPolicy:      TagName,
-		AttributePrinterInfo:             TagText,
-		AttributePrinterIsAcceptingJobs:  TagBoolean,
-		AttributePrinterIsShared:         TagBoolean,
-		AttributePrinterIsTemporary:      TagBoolean,
-		AttributePrinterName:             TagName,
-		AttributePrinterLocation:         TagText,
-		AttributePrinterResolution:       TagResolution,
-		AttributePrinterState:            TagEnum,
-		AttributePrinterStateReasons:     TagKeyword,
-		AttributePrinterURI:              TagUri,
-		AttributePurgeJobs:               TagBoolean,
-		AttributeRequestedAttributes:     TagKeyword,
-		AttributeRequestingUserName:      TagName,
-		AttributeWhichJobs:               TagKeyword,
-		AttributeFirstJobID:              TagInteger,
-		AttributeStatusMessage:           TagText,
-		AttributeLimit:                   TagInteger,
-		AttributeOutputOrder:             TagName,
-		AttributeJobStateReasons:         TagString,
-		AttributeJobStateMessage:         TagString,
-		AttributeJobPrinterStateReasons:  TagString,
-		AttributeJobPrinterStateMessage:  TagString,
-		AttributeJobImpressionsCompleted: TagInteger,
-		AttributePrintScaling:            TagKeyword,
-	}
-)
+// Attribute to Tag mapping
+var AttributeTagMapping = map[string]int8{
+	AttributeCharset:                 TagCharset,
+	AttributeNaturalLanguage:         TagLanguage,
+	AttributeCopies:                  TagInteger,
+	AttributeDeviceURI:               TagUri,
+	AttributeDocumentFormat:          TagMimeType,
+	AttributeDocumentName:            TagName,
+	AttributeDocumentNumber:          TagInteger,
+	AttributeDocumentState:           TagEnum,
+	AttributeFinishings:              TagEnum,
+	AttributeJobHoldUntil:            TagKeyword,
+	AttributeHoldJobUntil:            TagKeyword,
+	AttributeJobID:                   TagInteger,
+	AttributeJobName:                 TagName,
+	AttributeJobPrinterURI:           TagUri,
+	AttributeJobPriority:             TagInteger,
+	AttributeJobSheets:               TagName,
+	AttributeJobState:                TagEnum,
+	AttributeJobStateReason:          TagKeyword,
+	AttributeJobURI:                  TagUri,
+	AttributeLastDocument:            TagBoolean,
+	AttributeMedia:                   TagKeyword,
+	AttributeSides:                   TagKeyword,
+	AttributeMemberURIs:              TagUri,
+	AttributeMyJobs:                  TagBoolean,
+	AttributeNumberUp:                TagInteger,
+	AttributeOrientationRequested:    TagEnum,
+	AttributePPDName:                 TagName,
+	AttributePPDMakeAndModel:         TagText,
+	AttributeNumberOfDocuments:       TagInteger,
+	AttributePrintQuality:            TagEnum,
+	AttributePrinterErrorPolicy:      TagName,
+	AttributePrinterInfo:             TagText,
+	AttributePrinterIsAcceptingJobs:  TagBoolean,
+	AttributePrinterIsShared:         TagBoolean,
+	AttributePrinterIsTemporary:      TagBoolean,
+	AttributePrinterName:             TagName,
+	AttributePrinterLocation:         TagText,
+	AttributePrinterResolution:       TagResolution,
+	AttributePrinterState:            TagEnum,
+	AttributePrinterStateReasons:     TagKeyword,
+	AttributePrinterURI:              TagUri,
+	AttributePurgeJobs:               TagBoolean,
+	AttributeRequestedAttributes:     TagKeyword,
+	AttributeRequestingUserName:      TagName,
+	AttributeWhichJobs:               TagKeyword,
+	AttributeFirstJobID:              TagInteger,
+	AttributeStatusMessage:           TagText,
+	AttributeLimit:                   TagInteger,
+	AttributeOutputOrder:             TagName,
+	AttributeJobStateReasons:         TagString,
+	AttributeJobStateMessage:         TagString,
+	AttributeJobPrinterStateReasons:  TagString,
+	AttributeJobPrinterStateMessage:  TagString,
+	AttributeJobImpressionsCompleted: TagInteger,
+	AttributePrintScaling:            TagKeyword,
+}

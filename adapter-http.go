@@ -86,7 +86,7 @@ func (h *HttpAdapter) SendRequest(url string, req *Request, additionalResponseDa
 		return nil, fmt.Errorf("unable to buffer response: %w", err)
 	}
 
-	decoder := NewResponseStateMachine()
+	decoder := newResponseStateMachine()
 	ippResp, err := decoder.Decode(buf)
 
 	if err != nil {

@@ -66,7 +66,7 @@ func TestResponseDecoder_Decode(t *testing.T) {
 			continue
 		}
 		println(i)
-		decoder := NewResponseStateMachine()
+		decoder := newResponseStateMachine()
 		response, err := decoder.Decode(bytes.NewReader(c.Bytes))
 		assert.Nil(t, err)
 		assert.Equal(t, &c.Response, response, "decoded response is not correct")

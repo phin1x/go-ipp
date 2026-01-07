@@ -58,7 +58,7 @@ import (
                                ^ start of data
 */
 
-var UNSUPPORTED_RESPONSE = `
+var unsupportedResponse = `
 02 00 00 01 00 00 00 07 01 47 00 12 61 74 74 72
 69 62 75 74 65 73 2d 63 68 61 72 73 65 74 00 05    
 75 74 66 2d 38 48 00 1b 61 74 74 72 69 62 75 74
@@ -110,12 +110,10 @@ func hex2reader(hex string) *bytes.Reader {
 }
 
 func TestResponseDecode(t *testing.T) {
-	reader := hex2reader(UNSUPPORTED_RESPONSE)
-	//response := new(Response)
-	//err := response.Decode(reader)
+	reader := hex2reader(unsupportedResponse)
 
-	response_sm := NewResponseStateMachine()
-	response, err := response_sm.Decode(reader)
+	stateMachine := newResponseStateMachine()
+	response, err := stateMachine.Decode(reader)
 
 	if err != nil {
 		t.Errorf("Expected nil, got %v", err)
@@ -130,24 +128,24 @@ func TestResponseDecode(t *testing.T) {
 	if response.RequestId != 7 {
 		t.Errorf("Expected RequestId:7, got %v", response.RequestId)
 	}
-	//for k, v := range response.OperationAttributes {
-	//	fmt.Printf("OperationAttributes[%v]: %v\n", k, v)
-	//}
 
 	assert.Equal(t, 3, len(response.OperationAttributes))
 	assert.Equal(t, 1, len(response.OperationAttributes[AttributeCharset]))
-	charset := response.OperationAttributes[AttributeCharset][0]
-	assert.Equal(t, []byte("utf-8"), charset.Value)
 
-	unsupportedAttributes := response.UnsupportedAttributes[0]
+	charset := response.OperationAttributes[AttributeCharset][0]
+	assert.Equal(t, "utf-8", charset.Value)
+
+	unsupportedAttributes := response.UnsupportedAttributes
 	assert.Equal(t, 3, len(unsupportedAttributes))
+
 	printerType := unsupportedAttributes[AttributePrinterType][0]
-	assert.Equal(t, []byte("printer-type"), printerType.Value)
+	assert.Equal(t, "printer-type", printerType.Value)
 
 	printAttributes := response.PrinterAttributes[0]
 	assert.Equal(t, 8, len(printAttributes))
+
 	printerStateMsg := printAttributes[AttributePrinterStateMessage][0]
-	assert.Equal(t, []byte("Printer is ready to print"), printerStateMsg.Value)
+	assert.Equal(t, "Printer is ready to print", printerStateMsg.Value)
 
 	if response.Data != nil {
 		should := []byte{0x01, 0x02, 0x03}

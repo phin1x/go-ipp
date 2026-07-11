@@ -179,7 +179,14 @@ func (d *AttributeDecoder) decodeResolution() (res Resolution, err error) {
 }
 
 func (d *AttributeDecoder) readValueLength() (length int16, err error) {
-	err = binary.Read(d.reader, binary.BigEndian, &length)
+	if err = binary.Read(d.reader, binary.BigEndian, &length); err != nil {
+		return
+	}
+
+	if length < 0 {
+		err = fmt.Errorf("invalid negative value length %d", length)
+	}
+
 	return
 }
 

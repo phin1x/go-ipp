@@ -74,6 +74,20 @@ func TestAttributeEncoder_Encode(t *testing.T) {
 	}
 }
 
+func TestAttributeDecoder_NegativeValueLength(t *testing.T) {
+	// name "printer-name" followed by a value length of 0xffff, which is -1
+	// once read into a signed int16 and would panic in make([]byte, length).
+	buf := bytes.NewBuffer([]byte{
+		0x00, 0x0c, 'p', 'r', 'i', 'n', 't', 'e', 'r', '-', 'n', 'a', 'm', 'e',
+		0xff, 0xff,
+	})
+	dec := NewAttributeDecoder(buf)
+
+	attr, err := dec.Decode(TagName)
+	assert.Nil(t, attr)
+	assert.Error(t, err)
+}
+
 func TestCollection_Debug(t *testing.T) {
 	// Create the simplest possible collection
 	mediaCol := Collection{

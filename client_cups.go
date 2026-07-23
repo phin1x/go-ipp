@@ -3,6 +3,7 @@ package ipp
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"strings"
 )
 
@@ -340,13 +341,7 @@ func (c *CUPSClient) GetPrintersContext(ctx context.Context, attributes []string
 		return nil, err
 	}
 
-	printerNameMap := make(map[string]Attributes)
-
-	for _, printerAttributes := range resp.PrinterAttributes {
-		printerNameMap[printerAttributes[AttributePrinterName][0].Value.(string)] = printerAttributes
-	}
-
-	return printerNameMap, nil
+	return mapPrinterAttributesByName(resp.PrinterAttributes)
 }
 
 // GetClasses returns a map of class names and attributes
@@ -368,10 +363,28 @@ func (c *CUPSClient) GetClassesContext(ctx context.Context, attributes []string)
 		return nil, err
 	}
 
+	return mapPrinterAttributesByName(resp.PrinterAttributes)
+}
+
+// mapPrinterAttributesByName indexes the returned printer attribute groups by
+// their printer-name value. A malformed or malicious server response may omit
+// printer-name or return it as a non-string, so both cases return an error
+// instead of dereferencing a missing element or panicking on a bad assertion.
+func mapPrinterAttributesByName(groups []Attributes) (map[string]Attributes, error) {
 	printerNameMap := make(map[string]Attributes)
 
-	for _, printerAttributes := range resp.PrinterAttributes {
-		printerNameMap[printerAttributes[AttributePrinterName][0].Value.(string)] = printerAttributes
+	for _, printerAttributes := range groups {
+		nameAttributes := printerAttributes[AttributePrinterName]
+		if len(nameAttributes) == 0 {
+			return nil, fmt.Errorf("server didn't return a printer name")
+		}
+
+		printerName, ok := nameAttributes[0].Value.(string)
+		if !ok {
+			return nil, fmt.Errorf("server returned invalid printer name type %T", nameAttributes[0].Value)
+		}
+
+		printerNameMap[printerName] = printerAttributes
 	}
 
 	return printerNameMap, nil

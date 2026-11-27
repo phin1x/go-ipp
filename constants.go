@@ -277,7 +277,7 @@ const (
 
 // ipp defaults
 const (
-	CharsetLanguage      = "en-US"
+	CharsetLanguage      = "en-us"
 	Charset              = "utf-8"
 	ProtocolVersionMajor = int8(2)
 	ProtocolVersionMinor = int8(0)
